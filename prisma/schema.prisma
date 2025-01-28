@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Atur sesuai database Anda (postgresql, mysql, sqlite, dsb.)
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  name     String
+  password String
+  role     String   // Contoh: "admin", "user"
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  PENDETA
+  SEKRETARIS
+  KETUADEPARTEMEN
+}
+
+model FormData {
+  id           Int      @id @default(autoincrement())
+  pendetaCount Int
+  jemaatCount  Int
+  imageUrl     String
+  userId       Int
+  createdAt    DateTime @default(now())
+}
+
