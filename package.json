@@ -5,7 +5,6 @@
   "scripts": {
     "vercel-build": "npx prisma generate",
     "start": "node index.js"
-
   },
   "author": "",
   "license": "ISC",
