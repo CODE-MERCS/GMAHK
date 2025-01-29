@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "vercel-build": "npx prisma generate && npm run build",
-    "build": "node index.js"
+    "build": "node index.js",
+    "start": "node index.js"
+
   },
   "author": "",
   "license": "ISC",
