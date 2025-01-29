@@ -5,20 +5,20 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // Pastikan API key diambil dari .env
 });
 
-const validateImageWithGPT = async (imageUrl, pendetaCount, jemaatCount) => {
+const validateImageWithGPT = async (imageUrl, expectedCount) => {
   try {
     // Kirim permintaan ke API OpenAI
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Gunakan model yang mendukung visi
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "user",
           content: [
-            { type: "text", text: `berapa banyak orang di foto ini` },
+            { type: "text", text: "Hitung berapa banyak orang dalam gambar ini dan hanya balas dengan angka saja." },
             {
               type: "image_url",
               image_url: {
-                url: imageUrl, // URL gambar yang akan divalidasi
+                url: imageUrl,
               },
             },
           ],
@@ -26,24 +26,23 @@ const validateImageWithGPT = async (imageUrl, pendetaCount, jemaatCount) => {
       ],
     });
 
-    // Ambil hasil dari OpenAI API
-    const result = completion.choices[0].message.content;
+    // Ambil hasil dari OpenAI API (diharapkan hanya angka)
+    const result = completion.choices[0].message.content.trim();
 
     console.log("GPT Response:", result);
 
-    // Parsing hasil dari GPT (contoh sederhana)
-    const detectedPendetaCount = (result.match(/pendeta/i) || []).length;
-    const detectedJemaatCount = (result.match(/jemaat/i) || []).length;
+    // Konversi hasil ke angka
+    const detectedCount = parseInt(result, 10);
+    if (isNaN(detectedCount)) {
+      throw new Error("GPT tidak memberikan angka yang valid.");
+    }
 
-    const valid =
-      detectedPendetaCount === parseInt(pendetaCount, 10) &&
-      detectedJemaatCount === parseInt(jemaatCount, 10);
+    // Validasi dengan kelonggaran ±2
+    const isValid = Math.abs(detectedCount - expectedCount) <= 2;
 
     return {
-      valid,
-      message: valid
-        ? "Validation passed"
-        : `Detected counts (Pendeta: ${detectedPendetaCount}, Jemaat: ${detectedJemaatCount}) do not match the provided counts.`,
+      valid: isValid,
+      message: `Detected count: ${detectedCount}, Expected count: ${expectedCount}`,
     };
   } catch (error) {
     console.error("Error with OpenAI API:", error.message);

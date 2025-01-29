@@ -3,16 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Atur sesuai database Anda (postgresql, mysql, sqlite, dsb.)
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  email    String   @unique
-  name     String
-  password String
-  role     String   // Contoh: "admin", "user"
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role
   createdAt DateTime @default(now())
 }
 
@@ -23,11 +23,65 @@ enum Role {
 }
 
 model FormData {
-  id           Int      @id @default(autoincrement())
-  pendetaCount Int
-  jemaatCount  Int
-  imageUrl     String
-  userId       Int
-  createdAt    DateTime @default(now())
-}
+  id    Int    @id @default(autoincrement())
+  bulan String // Bulan yang dipilih untuk data ini
 
+  // Jumlah Anggota Jemaat
+  hadirSabat2              Int
+  hadirSabat7              Int
+  persentaseKehadiranBulan Float
+
+  // Perlawatan
+  perlawatanJemaat  Int // Jumlah Perlawatan Kepada Anggota Jemaat
+  perlawatannonSDA  Int
+  perlawatanPendeta Int
+
+  // Pelatihan
+  pelatihanUNI       Int?
+  pelatihanKonferens Int?
+  pelatihanPendeta   Int?
+
+  // Kelompok Peduli
+  kelompokPeduli      Int?
+  tamuKelompokPeduli  Int?
+  pembelajaranAlkitab Int?
+
+  // KKR dan Baptisan
+  jumlahKKR        Int
+  targetBaptisan   Int
+  baptisanBulanIni Int
+
+  // Seminar & Retreat
+  seminarKhotbah  Int?
+  retreatPendeta  Int
+  penanamanGereja Int?
+
+  // Gereja Baru & Kepemimpinan
+  ketuaJemaat  Int
+  jumlahDiakon Int
+
+  // Berkhotbah & Persembahan
+  berkhotbahSabat    Int
+  berkhotbahSabat7   Int
+  persentasiDiakones Float
+  jumlahPersembahan  Int
+  komiteJemaat       Int
+
+  // URL Foto
+  fotoPerlawatanJemaat   String
+  fotoPerlawatannonSDA   String
+  fotoPerlawatanPendeta  String
+  fotoPelatihanUNI       String?
+  fotoPelatihanKonferens String?
+  fotoPelatihanPendeta   String?
+  fotoKelompokPeduli     String?
+  fotoTamuKelompok       String?
+  fotoPembelajaran       String?
+  fotoBaptisanBulanIni   String
+  fotoSeminarKhotbah     String?
+  fotoPenanamanGereja    String?
+  fotoKomiteJemaat       String
+
+  userId    Int
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,17 @@
+-- AlterTable
+ALTER TABLE "FormData" ALTER COLUMN "fotoKelompokPeduli" DROP NOT NULL,
+ALTER COLUMN "fotoPelatihanKonferens" DROP NOT NULL,
+ALTER COLUMN "fotoPelatihanPendeta" DROP NOT NULL,
+ALTER COLUMN "fotoPelatihanUNI" DROP NOT NULL,
+ALTER COLUMN "fotoPembelajaran" DROP NOT NULL,
+ALTER COLUMN "fotoPenanamanGereja" DROP NOT NULL,
+ALTER COLUMN "fotoSeminarKhotbah" DROP NOT NULL,
+ALTER COLUMN "fotoTamuKelompok" DROP NOT NULL,
+ALTER COLUMN "kelompokPeduli" DROP NOT NULL,
+ALTER COLUMN "pelatihanKonferens" DROP NOT NULL,
+ALTER COLUMN "pelatihanPendeta" DROP NOT NULL,
+ALTER COLUMN "pelatihanUNI" DROP NOT NULL,
+ALTER COLUMN "pembelajaranAlkitab" DROP NOT NULL,
+ALTER COLUMN "penanamanGereja" DROP NOT NULL,
+ALTER COLUMN "seminarKhotbah" DROP NOT NULL,
+ALTER COLUMN "tamuKelompokPeduli" DROP NOT NULL;
