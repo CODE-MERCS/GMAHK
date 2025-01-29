@@ -4,9 +4,7 @@
   "main": "index.js",
   "scripts": {
     "vercel-build": "npx prisma generate && npm run build",
-    "build": "npx prisma generate && node index.js",
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -21,7 +19,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "openai": "^4.80.1",
-    "postgres": "^3.4.5"
+    "postgres": "^3.4.5",
+    "prisma": "^6.3.0"
   },
   "devDependencies": {
     "parcel": "^2.13.3"
