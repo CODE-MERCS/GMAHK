@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "vercel-build": "npx prisma generate && npm run build",
-    "build": "node index.js",
+    "vercel-build": "npx prisma generate",
     "start": "node index.js"
 
   },
