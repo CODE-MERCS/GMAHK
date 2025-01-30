@@ -131,19 +131,25 @@ const validateFormData = () => async (req, res) => {
 // ✅ Endpoint untuk Menyimpan Data ke Database
 const saveFormDataToDB = async (req, res) => {
   try {
-    // Hanya check kategori yang wajib
+    // 1. Cek kategori wajib yang belum divalidasi atau validasinya gagal
     const requiredCategories = Object.values(categoryMapping)
       .filter(m => !m.optional)
       .map(m => Object.keys(categoryMapping).find(key => categoryMapping[key] === m));
 
-    const missing = requiredCategories
-      .filter(cat => !validationResults[cat] && !categoryMapping[cat].optional)
-      .map(cat => categoryMapping[cat].field);
+      const invalidFields = requiredCategories
+      .filter(cat => {
+        const result = validationResults[cat];
+        return !result || result.valid === false;
+      })
+      .map(cat => ({
+        field: categoryMapping[cat].field,
+        status: !validationResults[cat] ? "Belum divalidasi" : "Validasi gagal"
+      }));
 
-    if (missing.length > 0) {
-      return res.status(400).json({ 
-        message: `Kategori wajib belum divalidasi`,
-        missing
+    if (invalidFields.length > 0) {
+      return res.status(400).json({
+        message: "Validasi gagal untuk field wajib",
+        invalidFields
       });
     }
 
@@ -154,6 +160,7 @@ const saveFormDataToDB = async (req, res) => {
         inputData[m.imageField] = null;
       }
     });
+
 
     const userId = req.user.id;
     const { bulan } = req.body;
