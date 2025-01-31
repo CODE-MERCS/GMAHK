@@ -187,7 +187,30 @@ const DashboardPendetaPage = () => {
 
     setLoading((prev) => ({ ...prev, [key]: false }));
   };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
 
+    const finalData = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      finalData.append(key, value);
+    });
+
+    Object.entries(selectedFiles).forEach(([key, file]) => {
+      if (file) {
+        finalData.append("image_" + key, file);
+      }
+    });
+
+    try {
+      await saveFormData(finalData);
+      setMessage("Data berhasil disimpan!");
+    } catch (error) {
+      setMessage("Gagal menyimpan data.");
+    }
+
+    setSaving(false);
+  };
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white shadow-lg rounded-lg">
       <h1 className="text-3xl font-bold text-green-700 text-center mb-6">
@@ -277,6 +300,13 @@ const DashboardPendetaPage = () => {
           ))}
         </tbody>
       </table>
+      <button
+      onClick={handleSubmit}
+        type="submit"
+        className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition mt-4"
+      >
+        {saving ? "Menyimpan..." : "Simpan Laporan"}
+      </button>
     </div>
   );
 };
