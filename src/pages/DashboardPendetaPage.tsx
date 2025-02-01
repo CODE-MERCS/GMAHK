@@ -6,6 +6,11 @@ import { saveFormData, validateData } from "../api/form";
 // **FORMAT FORM YANG DI-SUBMIT**
 const formStructure = [
   {
+    key: "bulan",
+    label: "Bulan",
+    validate: false,
+  },
+  {
     category: "Jumlah Anggota Jemaat",
     items: [
       {
@@ -92,12 +97,17 @@ const formStructure = [
     label: "12. Target Baptisan Jemaat Tahun ini",
     validate: false,
   },
-  { key: "baptisanBulanIni", label: "13. Baptisan Bulan Ini", validate: false },
+  {
+    key: "baptisanBulanIni",
+    label: "13. Baptisan Bulan Ini",
+    validate: true,
+    id: 10,
+  },
   {
     key: "seminarKhotbah",
     label: "14. Jumlah Mengikuti/Mangadakan Seminar Khotbah",
     validate: true,
-    id: 10,
+    id: 11,
   },
   {
     key: "retreatPendeta",
@@ -108,7 +118,7 @@ const formStructure = [
     key: "penanamanGereja",
     label: "16. Jumlah Penanaman Gereja Baru/Ladang Baru",
     validate: true,
-    id: 11,
+    id: 12,
   },
   { key: "ketuaJemaat", label: "17. Jumlah Ketua Jemaat", validate: false },
   { key: "jumlahDiakon", label: "18. Jumlah Diakon", validate: false },
@@ -121,6 +131,16 @@ const formStructure = [
         validate: false,
       },
       {
+        key: "berkhotbahSabat7",
+        label: "(b). Jumlah Berkhotbah Pada Hari Sabat Ke-7",
+        validate: false,
+      },
+      {
+        key: "persentasiDiakones",
+        label: "(c). Jumlah Persentasi Kehadiran Anggota per Bulan",
+        validate: false,
+      },
+      {
         key: "jumlahPersembahan",
         label: "(d). Jumlah Persembahan",
         validate: false,
@@ -128,7 +148,8 @@ const formStructure = [
       {
         key: "komiteJemaat",
         label: "(e). Jumlah Komite Jemaat (Paling kurang 1 kali dalam sebulan)",
-        validate: false,
+        validate: true,
+        id: 13,
       },
     ],
   },
@@ -191,37 +212,44 @@ const DashboardPendetaPage = () => {
     e.preventDefault();
     setSaving(true);
 
-    const finalData = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      finalData.append(key, value);
-    });
+    // 🔹 Pastikan bulan valid
+    if (!formData["bulan"] || typeof formData["bulan"] !== "string") {
+      setMessage("⚠️ Harap pilih bulan sebelum menyimpan!");
+      setSaving(false);
+      return;
+    }
 
-    Object.entries(selectedFiles).forEach(([key, file]) => {
-      if (file) {
-        finalData.append("image_" + key, file);
-      }
-    });
+    // 🔹 Format data untuk API
+    const finalData = {
+      bulan: formData["bulan"].trim().toLowerCase(), // Pastikan format string tanpa spasi ekstra
+      ...Object.fromEntries(
+        Object.entries(formData).map(([key, value]) => [
+          key,
+          key !== "bulan" ? Number(value) || 0 : value,
+        ])
+      ),
+    };
+
+    // 🔍 Debugging: Pastikan data sudah benar sebelum dikirim
+    console.log("📤 Data yang dikirim ke API:", finalData);
 
     try {
-      await saveFormData(finalData);
-      setMessage("Data berhasil disimpan!");
+      const response = await saveFormData(finalData);
+      console.log("✅ Response API:", response);
+      setMessage("✅ Data berhasil disimpan!");
     } catch (error) {
-      setMessage("Gagal menyimpan data.");
+      console.error("❌ Gagal menyimpan data:", error);
+      setMessage("❌ Gagal menyimpan data. Periksa kembali input Anda.");
     }
 
     setSaving(false);
   };
+
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white shadow-lg rounded-lg">
       <h1 className="text-3xl font-bold text-green-700 text-center mb-6">
         Laporan Bulanan Kependetaan
       </h1>
-
-      {message && (
-        <p className="text-center text-white bg-green-600 p-3 rounded-lg mb-4">
-          {message}
-        </p>
-      )}
 
       <table className="w-full border-collapse border">
         <thead>
@@ -251,7 +279,7 @@ const DashboardPendetaPage = () => {
                   <td className="p-3 border">{item.label}</td>
                   <td className="p-3 border">
                     <input
-                      type="number"
+                      type={item.key === "bulan" ? "text" : "number"}
                       name={item.key}
                       value={formData[item.key] || ""}
                       onChange={handleInputChange}
@@ -301,7 +329,7 @@ const DashboardPendetaPage = () => {
         </tbody>
       </table>
       <button
-      onClick={handleSubmit}
+        onClick={handleSubmit}
         type="submit"
         className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition mt-4"
       >
