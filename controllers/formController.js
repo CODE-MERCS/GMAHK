@@ -1,68 +1,30 @@
 const { saveFormData } = require("../services/formService");
 const { validateImageWithGPT } = require("../services/gptValidation");
 const { uploadImageToImageKit } = require("../services/imageKitService");
+const prisma = require("../configs/prisma");
+
 
 // Mapping kategori ke field database
 const categoryMapping = {
-  // ...kategori wajib
   1: { field: 'perlawatanJemaat', imageField: 'fotoPerlawatanJemaat' },
   2: { field: 'perlawatannonSDA', imageField: 'fotoPerlawatannonSDA' },
   3: { field: 'perlawatanPendeta', imageField: 'fotoPerlawatanPendeta' },
-  
-  // Kategori optional
-  4: { 
-    field: 'pelatihanUNI', 
-    imageField: 'fotoPelatihanUNI',
-    optional: true 
-  },
-  5: { 
-    field: 'pelatihanKonferens', 
-    imageField: 'fotoPelatihanKonferens',
-    optional: true 
-  },
-  6: { 
-    field: 'pelatihanPendeta', 
-    imageField: 'fotoPelatihanPendeta',
-    optional: true 
-  },
-  7: { 
-    field: 'kelompokPeduli', 
-    imageField: 'fotoKelompokPeduli',
-    optional: true 
-  },
-  8: { 
-    field: 'tamuKelompokPeduli', 
-    imageField: 'fotoTamuKelompok',
-    optional: true 
-  },
-  9: { 
-    field: 'pembelajaranAlkitab', 
-    imageField: 'fotoPembelajaran',
-    optional: true 
-  },
-  10: { 
-    field: 'baptisanBulanIni', 
-    imageField: 'fotoBaptisanBulanIni' 
-  },
-  11: { 
-    field: 'seminarKhotbah', 
-    imageField: 'fotoSeminarKhotbah',
-    optional: true 
-  },
-  12: { 
-    field: 'penanamanGereja', 
-    imageField: 'fotoPenanamanGereja',
-    optional: true 
-  },
-  13: { 
-    field: 'komiteJemaat', 
-    imageField: 'fotoKomiteJemaat' 
-  }
+  4: { field: 'pelatihanUNI', imageField: 'fotoPelatihanUNI', optional: true },
+  5: { field: 'pelatihanKonferens', imageField: 'fotoPelatihanKonferens', optional: true },
+  6: { field: 'pelatihanPendeta', imageField: 'fotoPelatihanPendeta', optional: true },
+  7: { field: 'kelompokPeduli', imageField: 'fotoKelompokPeduli', optional: true },
+  8: { field: 'tamuKelompokPeduli', imageField: 'fotoTamuKelompok', optional: true },
+  9: { field: 'pembelajaranAlkitab', imageField: 'fotoPembelajaran', optional: true },
+  10: { field: 'baptisanBulanIni', imageField: 'fotoBaptisanBulanIni' },
+  11: { field: 'seminarKhotbah', imageField: 'fotoSeminarKhotbah', optional: true },
+  12: { field: 'penanamanGereja', imageField: 'fotoPenanamanGereja', optional: true },
+  13: { field: 'komiteJemaat', imageField: 'fotoKomiteJemaat' }
 };
 
 // Objek untuk menyimpan hasil validasi sementara
 let validationResults = {};
 let inputData = {};
+
 
 // ✅ Endpoint untuk Validasi Gambar
 const validateFormData = () => async (req, res) => {
@@ -165,14 +127,17 @@ const saveFormDataToDB = async (req, res) => {
     const userId = req.user.id;
     const { bulan } = req.body;
 
-    if (!bulan) {
-      return res.status(400).json({ message: "Bulan harus dipilih" });
-    }
+   // Validasi bulan (REQUIRED dan harus string tidak kosong)
+   if (!bulan || typeof bulan !== 'string' || bulan.trim() === '') {
+    return res.status(400).json({ 
+      message: "Bulan wajib diisi"
+    });
+  }
 
     const finalData = {
       ...inputData,
       userId,
-      bulan,
+      bulan: bulan.trim(),
       hadirSabat2: req.body.hadirSabat2,
       hadirSabat7: req.body.hadirSabat7,
       persentaseKehadiranBulan: req.body.persentaseKehadiranBulan,
@@ -203,4 +168,38 @@ const saveFormDataToDB = async (req, res) => {
   }
 };
 
-module.exports = { validateFormData, saveFormDataToDB };
+// ✅ GET: Mengambil semua data form yang telah disimpan
+const getAllFormData = async (req, res) => {
+  try {
+    const formData = await prisma.formData.findMany();
+    res.status(200).json({ message: "Data retrieved successfully", data: formData });
+  } catch (error) {
+    console.error("Error in getAllFormData:", error.message);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+// ✅ GET: Mengambil data form berdasarkan bulan
+const getFormDataByBulan = async (req, res) => {
+  try {
+    const { bulan } = req.params;
+    const formData = await prisma.formData.findMany({
+      where: { bulan },
+    });
+
+    if (!formData.length) {
+      return res.status(404).json({ message: "No data found for this month" });
+    }
+
+    res.status(200).json({ message: "Data retrieved successfully", data: formData });
+  } catch (error) {
+    console.error("Error in getFormDataByBulan:", error.message);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+
+
+module.exports = { validateFormData, 
+  saveFormDataToDB,  getFormDataByBulan,
+  getAllFormData,};
