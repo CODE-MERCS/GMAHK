@@ -1,21 +1,23 @@
-const { registerUser, findUserByEmail } = require('../services/authService');
+const { registerUser, findUserByEmailOrPhone } = require('../services/authService');
 const { generateToken } = require('../configs/jwt');
 const bcrypt = require('bcryptjs');
 
 const register = async (req, res) => {
-  const { email, name, password, role } = req.body;
-
-  if (!email || !name || !password || !role) {
+  const { email, name, password, role, phone } = req.body; 
+  if (!email || !name || !password || !role || !phone) { 
     return res.status(400).json({ message: 'All fields are required' });
   }
 
   try {
-    const userExists = await findUserByEmail(email);
+    // Cek apakah email atau phone sudah terdaftar
+    const userExists = await findUserByEmailOrPhone(email, phone);
     if (userExists) {
-      return res.status(400).json({ message: 'Email already exists' });
+      let message = 'Email already exists';
+      if (userExists.phone === phone) message = 'Phone number already exists';
+      return res.status(400).json({ message });
     }
 
-    const user = await registerUser(email, name, password, role);
+    const user = await registerUser(email, name, password, role, phone); 
     res.status(201).json({ message: 'User registered successfully', user });
   } catch (error) {
     res.status(500).json({ message: 'Error registering user', error: error.message });
@@ -30,7 +32,7 @@ const login = async (req, res) => {
   }
 
   try {
-    const user = await findUserByEmail(email);
+    const user = await findUserByEmailOrPhone(email);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
