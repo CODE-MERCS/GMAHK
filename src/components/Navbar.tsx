@@ -26,7 +26,7 @@ const Navbar: React.FC = () => {
           <div className="flex items-center space-x-3">
             <img src="/logo.png" alt="GMAHK Logo" className="h-10 w-10 object-contain" />
             <Link to="/" className="text-white font-bold text-2xl hover:text-gray-300 transition">
-              GMAHK
+              PELITA
             </Link>
           </div>
 
