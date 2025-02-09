@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
-import { getSession } from "../utils/session"; // Cek session dari localStorage
+import { getSession } from "../utils/session";
 import { Mail, Lock, Loader2 } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [noAccount, setNoAccount] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,34 +20,31 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
-    setNoAccount(false);
 
     if (!email || !password) {
-      setError("Email dan password harus diisi!");
+      toast.error("⚠️ Email dan password harus diisi!", {
+        style: { background: "#ffcccc", color: "#b00000", fontWeight: "bold" },
+      });
       setLoading(false);
       return;
     }
 
-    console.log("Attempting login with:", { email, password });
-
     const { success, role, message } = await login(email, password);
-    console.log("Login response:", { success, role, message });
 
     setLoading(false);
 
     if (success) {
-      console.log("Received role:", role);
-      navigate("/dashboard");
+      toast.success("✅ Login berhasil! Redirecting...", {
+        duration: 2000,
+        style: { background: "#4CAF50", color: "#fff", fontWeight: "bold" },
+      });
+
+      setTimeout(() => navigate("/dashboard"), 2000);
     } else {
-      setError(message || "Login gagal, coba lagi.");
-      if (
-        message?.toLowerCase().includes("user not found") ||
-        message?.toLowerCase().includes("akun tidak ditemukan")
-      ) {
-        setNoAccount(true);
-      }
+      toast.error(message || "❌ Login gagal, coba lagi.", {
+        style: { background: "#ffcccc", color: "#b00000", fontWeight: "bold" },
+      });
     }
   };
 
@@ -59,6 +55,9 @@ const Login = () => {
     >
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+      {/* Toaster */}
+      <Toaster position="top-center" reverseOrder={false} />
 
       {/* Box Container */}
       <div className="relative w-full max-w-xs sm:max-w-md py-16">
@@ -74,12 +73,6 @@ const Login = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6">
             Login ke <span className="text-green-600">PELITA</span>
           </h2>
-
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm sm:text-base">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
@@ -128,19 +121,6 @@ const Login = () => {
               )}
             </button>
           </form>
-
-          {/* Jika akun tidak ditemukan */}
-          {noAccount && (
-            <div className="text-center text-red-600 mt-4 text-sm sm:text-base">
-              Akun tidak ditemukan. <br />
-              <Link
-                to="/register"
-                className="text-green-600 font-semibold hover:underline"
-              >
-                Daftar Sekarang
-              </Link>
-            </div>
-          )}
 
           {/* Register Link */}
           <div className="text-center mt-6 text-gray-600 text-sm sm:text-base">
