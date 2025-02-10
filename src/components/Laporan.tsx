@@ -155,7 +155,7 @@ const formStructure = [
   },
 ];
 
-const DashboardPendetaPage = () => {
+const Laporan = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [selectedFiles, setSelectedFiles] = useState<
@@ -339,4 +339,4 @@ const DashboardPendetaPage = () => {
   );
 };
 
-export default withRole(DashboardPendetaPage, "PENDETA");
+export default withRole(Laporan, "PENDETA");

@@ -50,24 +50,70 @@ export const saveFormData = async (formData: Record<string, any>) => {
  * Validasi data dengan API berdasarkan ID (1-13) menggunakan Bearer Token
  */
 export const validateData = async (id: number, formData: FormData) => {
-    if (id < 1 || id > 13) {
-      throw new Error("ID validasi harus antara 1-13");
-    }
-  
-    try {
-      const token = getAuthToken();
-      if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
-  
-      const response = await axios.post(`${API_BASE_URL}/validation/${id}`, formData, {
+  if (id < 1 || id > 13) {
+    throw new Error("ID validasi harus antara 1-13");
+  }
+
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.post(
+      `${API_BASE_URL}/validation/${id}`,
+      formData,
+      {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
-      });
-  
-      return response.data;
-    } catch (error) {
-      console.error("Error validating data:", error);
-      throw error;
-    }
-  };
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error validating data:", error);
+    throw error;
+  }
+};
+
+export const getHistory = async () => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.get(`${API_BASE_URL}/data`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log("✅ History Data:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Gagal mengambil history:", error);
+    throw error;
+  }
+};
+
+export const getHistoryById = async (id: string | undefined) => {
+  if (!id) return null;
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await fetch(`${API_BASE_URL}/data/${id}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const result = await response.json();
+    console.log("✅ Detail History API Response:", result);
+    return result;
+  } catch (error) {
+    console.error("❌ Error fetching history detail:", error);
+    return null;
+  }
+};
