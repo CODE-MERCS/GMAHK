@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 
 const HistoryDetailPage = () => {
   const { id } = useParams(); // Ambil ID dari URL
-  const [historyDetail, setHistoryDetail] = useState<any | null>(null);
+  const [historyDetail, setHistoryDetail] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -49,27 +49,39 @@ const HistoryDetailPage = () => {
 
           {/* 🔹 Semua Data Laporan */}
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {Object.entries(historyDetail).map(([key, value]) =>
-              key.startsWith("foto") && value ? (
-                <div key={key} className="col-span-1 flex flex-col items-center">
-                  <p className="text-gray-700 font-semibold">{key.replace("foto", "Foto ")}</p>
-                  <img
-                    src={value as string}
-                    alt={key}
-                    className="mt-2 w-40 h-40 object-cover rounded-lg shadow-md"
-                  />
-                </div>
-              ) : !key.startsWith("foto") &&
-                key !== "id" &&
-                key !== "userId" &&
-                key !== "createdAt" &&
-                key !== "username" ? (
+            {Object.entries(historyDetail).map(([key, value]) => {
+              // 🔹 Jika merupakan foto, tampilkan sebagai gambar
+              if (key.startsWith("foto") && typeof value === "string" && value.startsWith("http")) {
+                return (
+                  <div key={key} className="col-span-1 flex flex-col items-center">
+                    <p className="text-gray-700 font-semibold">{key.replace("foto", "Foto ")}</p>
+                    <img
+                      src={value}
+                      alt={key}
+                      className="mt-2 w-40 h-40 object-cover rounded-lg shadow-md"
+                    />
+                  </div>
+                );
+              }
+
+              // 🔹 Jika merupakan objek atau array, ubah menjadi string
+              if (typeof value === "object" || Array.isArray(value)) {
+                return (
+                  <p key={key} className="text-gray-600">
+                    <span className="font-semibold">{key.replace(/([A-Z])/g, " $1")}: </span>
+                    {JSON.stringify(value)}
+                  </p>
+                );
+              }
+
+              // 🔹 Render teks biasa untuk tipe data primitif (string, number, boolean)
+              return (
                 <p key={key} className="text-gray-600">
                   <span className="font-semibold">{key.replace(/([A-Z])/g, " $1")}: </span>
-                  {value}
+                  {String(value)}
                 </p>
-              ) : null
-            )}
+              );
+            })}
           </div>
         </div>
       ) : (
@@ -80,4 +92,3 @@ const HistoryDetailPage = () => {
 };
 
 export default HistoryDetailPage;
-    
