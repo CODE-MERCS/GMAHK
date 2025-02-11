@@ -1,5 +1,5 @@
 const express = require("express");
-const { validateFormData, saveFormDataToDB,getAllFormData, getFormDataByBulan  } = require("../controllers/formController");
+const { validateFormData, saveFormDataToDB,getAllFormData, getFormDataByBulan, getFormDataById  } = require("../controllers/formController");
 const { authMiddleware, roleMiddleware } = require("../middlewares/authMiddleware");
 const multer = require("multer");
 
@@ -16,6 +16,7 @@ router.post(
 
 router.get("/data", authMiddleware, getAllFormData);
 router.get("/data/bulan/:bulan", authMiddleware, getFormDataByBulan);
+router.get("/data/:id", authMiddleware, getFormDataById);
 
 
 // Endpoint untuk menyimpan ke database jika semua validasi sukses

@@ -10,6 +10,7 @@ datasource db {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
+  formDatas FormData[]
   phone     String?  @unique
   name      String
   password  String
@@ -24,9 +25,10 @@ enum Role {
 }
 
 model FormData {
-  id    Int    @id @default(autoincrement())
-  bulan String // Bulan yang dipilih untuk data ini
-
+  id        Int    @id @default(autoincrement())
+  bulan     String
+  userId    Int
+  user      User   @relation(fields: [userId], references: [id]) // Relasi ke User
   // Jumlah Anggota Jemaat
   hadirSabat2              Int
   hadirSabat7              Int
@@ -83,6 +85,5 @@ model FormData {
   fotoPenanamanGereja    String?
   fotoKomiteJemaat       String
 
-  userId    Int
   createdAt DateTime @default(now())
 }

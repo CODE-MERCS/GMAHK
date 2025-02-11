@@ -1,4 +1,5 @@
 const { saveFormData } = require("../services/formService");
+const { sendWhatsAppNotification } = require('../services/notificationService');
 const { validateImageWithGPT } = require("../services/gptValidation");
 const { uploadImageToImageKit } = require("../services/imageKitService");
 const prisma = require("../configs/prisma");
@@ -92,13 +93,16 @@ const validateFormData = () => async (req, res) => {
 
 // ✅ Endpoint untuk Menyimpan Data ke Database
 const saveFormDataToDB = async (req, res) => {
+  // Deklarasikan recipients di luar blok try
+  let recipients = [];
+
   try {
     // 1. Cek kategori wajib yang belum divalidasi atau validasinya gagal
     const requiredCategories = Object.values(categoryMapping)
       .filter(m => !m.optional)
       .map(m => Object.keys(categoryMapping).find(key => categoryMapping[key] === m));
 
-      const invalidFields = requiredCategories
+    const invalidFields = requiredCategories
       .filter(cat => {
         const result = validationResults[cat];
         return !result || result.valid === false;
@@ -123,17 +127,17 @@ const saveFormDataToDB = async (req, res) => {
       }
     });
 
-
     const userId = req.user.id;
     const { bulan } = req.body;
 
-   // Validasi bulan (REQUIRED dan harus string tidak kosong)
-   if (!bulan || typeof bulan !== 'string' || bulan.trim() === '') {
-    return res.status(400).json({ 
-      message: "Bulan wajib diisi"
-    });
-  }
+    // Validasi bulan
+    if (!bulan || typeof bulan !== 'string' || bulan.trim() === '') {
+      return res.status(400).json({ 
+        message: "Bulan wajib diisi"
+      });
+    }
 
+    // Satukan data
     const finalData = {
       ...inputData,
       userId,
@@ -152,27 +156,88 @@ const saveFormDataToDB = async (req, res) => {
       jumlahPersembahan: req.body.jumlahPersembahan
     };
 
+    // Simpan data ke database
     const formData = await saveFormData(finalData);
 
-    // Reset data
-    validationResults = {};
-    inputData = {};
+    // 🔥 Bagian baru untuk mengirim notifikasi
+    try {
+      // 1. Ambil penerima
+      recipients = await prisma.user.findMany({
+        where: {
+          role: { in: ['SEKRETARIS', 'PENDETA'] },
+          phone: { not: null, startsWith: '08' }
+        },
+        select: { phone: true, name: true, role: true }
+      });
 
-    res.status(201).json({
-      message: "Data berhasil disimpan",
-      data: formData,
-    });
-  } catch (error) {
-    console.error("Error in saveFormDataToDB:", error.message);
-    res.status(500).json({ message: "Internal server error", error: error.message });
-  }
+      // 2. Siapkan pesan
+      const message = `Form telah berhasil di Inputkan pada bulan ${bulan.trim()}`;
+
+      // 3. Kirim ke semua penerima secara paralel
+      const sendPromises = recipients.map(async (user) => {
+        try {
+          await sendWhatsAppNotification(user.phone, message);
+          console.log(`Notifikasi terkirim ke ${user.name} (${user.role}) - ${user.phone}`);
+        } catch (error) {
+          console.error(`Gagal mengirim ke ${user.phone}:`, error.message);
+        }
+      });
+
+      await Promise.all(sendPromises);
+      console.log(`Total notifikasi terkirim: ${recipients.length}`);
+    } catch (error) {
+      console.error('Error dalam proses notifikasi:', error);
+      // Tetap lanjutkan meski gagal kirim notifikasi
+    }
+
+  // Reset data
+  validationResults = {};
+  inputData = {};
+
+ // Ambil nama user yang menginput
+ const user = await prisma.user.findUnique({
+  where: { id: userId },
+  select: { name: true }
+});
+
+// Kembalikan respon
+res.status(201).json({
+  message: "Data berhasil disimpan",
+  data: {
+    ...formData,
+    inputBy: user.name // Tambahkan nama penginput
+  },
+  notificationSent: recipients ? recipients.length : 0
+});
+} catch (error) {
+console.error("Error in saveFormDataToDB:", error.message);
+res.status(500).json({ message: "Internal server error", error: error.message });
+}
 };
 
 // ✅ GET: Mengambil semua data form yang telah disimpan
 const getAllFormData = async (req, res) => {
   try {
-    const formData = await prisma.formData.findMany();
-    res.status(200).json({ message: "Data retrieved successfully", data: formData });
+    const formData = await prisma.formData.findMany({
+      include: {
+        user: {
+          select: {
+            name: true // Hanya ambil nama user
+          }
+        }
+      }
+    });
+
+    // Format ulang data untuk menyertakan username dan hapus objek user
+    const formattedData = formData.map(data => {
+      const { user, ...rest } = data; // Pisahkan objek user dari data lainnya
+      return {
+        ...rest,
+        username: user.name // Tambahkan username ke dalam respons
+      };
+    });
+
+    res.status(200).json({ message: "Data retrieved successfully", data: formattedData });
   } catch (error) {
     console.error("Error in getAllFormData:", error.message);
     res.status(500).json({ message: "Internal server error", error: error.message });
@@ -185,15 +250,66 @@ const getFormDataByBulan = async (req, res) => {
     const { bulan } = req.params;
     const formData = await prisma.formData.findMany({
       where: { bulan },
+      include: {
+        user: {
+          select: {
+            name: true // Hanya ambil nama user
+          }
+        }
+      }
     });
 
     if (!formData.length) {
       return res.status(404).json({ message: "No data found for this month" });
     }
 
-    res.status(200).json({ message: "Data retrieved successfully", data: formData });
+    // Format ulang data untuk menyertakan username dan hapus objek user
+    const formattedData = formData.map(data => {
+      const { user, ...rest } = data; // Pisahkan objek user dari data lainnya
+      return {
+        ...rest,
+        username: user.name // Tambahkan username ke dalam respons
+      };
+    });
+
+    res.status(200).json({ message: "Data retrieved successfully", data: formattedData });
   } catch (error) {
     console.error("Error in getFormDataByBulan:", error.message);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+// ✅ GET: Mengambil data form berdasarkan ID
+const getFormDataById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Cari data berdasarkan ID
+    const formData = await prisma.formData.findUnique({
+      where: { id: parseInt(id, 10) },
+      include: {
+        user: {
+          select: {
+            name: true // Hanya ambil nama user
+          }
+        }
+      }
+    });
+
+    if (!formData) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+
+    // Format ulang data untuk menyertakan username dan hapus objek user
+    const { user, ...rest } = formData;
+    const formattedData = {
+      ...rest,
+      username: user.name // Tambahkan username ke dalam respons
+    };
+
+    res.status(200).json({ message: "Data retrieved successfully", data: formattedData });
+  } catch (error) {
+    console.error("Error in getFormDataById:", error.message);
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
@@ -202,4 +318,4 @@ const getFormDataByBulan = async (req, res) => {
 
 module.exports = { validateFormData, 
   saveFormDataToDB,  getFormDataByBulan,
-  getAllFormData,};
+  getAllFormData,getFormDataById,};

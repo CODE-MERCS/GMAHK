@@ -1,25 +1,28 @@
-// services/notificationService.js
-const fetch = require('node-fetch');
+const axios = require('axios');
+const FormData = require('form-data');
 require('dotenv').config();
 
 const sendWhatsAppNotification = async (phone, message) => {
   try {
-    const response = await fetch(process.env.FONNTE_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': process.env.FONNTE_API_KEY,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        target: phone,
-        message: message
-      })
-    });
+    const data = new FormData();
+    data.append('target', phone);
+    data.append('message', message);
 
-    const data = await response.json();
-    return data;
+    const config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: process.env.FONNTE_API_URL || 'https://api.fonnte.com/send',
+      headers: { 
+        'Authorization': process.env.FONNTE_API_KEY, 
+        ...data.getHeaders()
+      },
+      data: data
+    };
+
+    const response = await axios(config);
+    return response.data;
   } catch (error) {
-    console.error('Error sending WhatsApp:', error);
+    console.error('Error sending WhatsApp:', error.response ? error.response.data : error.message);
     throw error;
   }
 };
