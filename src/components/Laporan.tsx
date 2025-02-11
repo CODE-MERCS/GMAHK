@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import withRole from "../middleware/WithRole";
 import { saveFormData, validateData } from "../api/form";
 
+const months = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+];
 // **FORMAT FORM YANG DI-SUBMIT**
 const formStructure = [
   {
@@ -174,7 +178,7 @@ const Laporan = () => {
   }, [navigate]);
 
   // **🔹 Handle Input Form**
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -278,13 +282,30 @@ const Laporan = () => {
                   </td>
                   <td className="p-3 border">{item.label}</td>
                   <td className="p-3 border">
-                    <input
-                      type={item.key === "bulan" ? "text" : "number"}
-                      name={item.key}
-                      value={formData[item.key] || ""}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border"
-                    />
+                  {item.key === "bulan" ? (
+                      // 🔹 Dropdown untuk memilih bulan
+                      <select
+                        name="bulan"
+                        value={formData["bulan"] || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border"
+                      >
+                        <option value="">Pilih Bulan</option>
+                        {months.map((month, idx) => (
+                          <option key={idx} value={month}>
+                            {month}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="number"
+                        name={item.key}
+                        value={formData[item.key] || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border"
+                      />
+                    )}
                     {item.validate && (
                       <input
                         type="file"

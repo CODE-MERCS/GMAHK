@@ -117,3 +117,23 @@ export const getHistoryById = async (id: string | undefined) => {
     return null;
   }
 };
+
+export const getHistoryByMonth = async (bulan: string) => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.get(`${API_BASE_URL}/data/bulan/${bulan}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log(`✅ History Data for Month (${bulan}):`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`❌ Gagal mengambil history bulan ${bulan}:`, error);
+    throw error;
+  }
+};
+
