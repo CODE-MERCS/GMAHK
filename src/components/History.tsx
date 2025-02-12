@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getHistory, getHistoryByMonth } from "../api/form";
 import { Loader2 } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -71,15 +72,16 @@ const History = () => {
           {historyData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {historyData.map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-white shadow-lg p-4 rounded-lg border border-gray-200"
-                >
-                  <h2 className="text-lg font-semibold text-gray-700">
-                    {item.username ?? "Unknown User"}
-                  </h2>
-                  <p className="text-gray-500">Bulan: {item.bulan ?? "N/A"}</p>
-                </div>
+                <NavLink 
+                to={`/dashboard/history/${item.id}`} // ✅ Navigasi ke halaman detail berdasarkan ID
+                key={index}
+                className="bg-white shadow-lg p-4 rounded-lg border border-gray-200 hover:shadow-xl transition"
+              >
+                <h2 className="text-lg font-semibold text-gray-700">
+                  {item.username ?? "Unknown User"}
+                </h2>
+                <p className="text-gray-500">Bulan: {item.bulan ?? "N/A"}</p>
+              </NavLink>
               ))}
             </div>
           ) : dataFetched ? (

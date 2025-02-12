@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import withRole from "../middleware/WithRole";
 import { saveFormData, validateData } from "../api/form";
+import toast, { Toaster } from "react-hot-toast";
 
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -161,14 +162,17 @@ const formStructure = [
 
 const Laporan = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<Record<string, string>>(() => {
+    // Saat pertama kali load, ambil dari LocalStorage
+    const savedData = localStorage.getItem("formData");
+    return savedData ? JSON.parse(savedData) : {};
+  });
   const [selectedFiles, setSelectedFiles] = useState<
     Record<string, File | null>
   >({});
   const [validations, setValidations] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -179,7 +183,9 @@ const Laporan = () => {
 
   // **🔹 Handle Input Form**
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const newFormData = { ...formData, [e.target.name]: e.target.value };
+    setFormData(newFormData);
+    localStorage.setItem("formData", JSON.stringify(newFormData)); // Simpan ke LocalStorage
   };
 
   // **🔹 Handle Upload File**
@@ -207,7 +213,7 @@ const Laporan = () => {
       const response = await validateData(id, formDataToSend);
       setValidations((prev) => ({ ...prev, [key]: response }));
     } catch (error) {
-      setMessage("Validasi gagal");
+      toast.error("Validasi gagal");
     }
 
     setLoading((prev) => ({ ...prev, [key]: false }));
@@ -218,7 +224,7 @@ const Laporan = () => {
 
     // 🔹 Pastikan bulan valid
     if (!formData["bulan"] || typeof formData["bulan"] !== "string") {
-      setMessage("⚠️ Harap pilih bulan sebelum menyimpan!");
+      toast.error("⚠️ Harap pilih bulan sebelum menyimpan!");
       setSaving(false);
       return;
     }
@@ -240,10 +246,10 @@ const Laporan = () => {
     try {
       const response = await saveFormData(finalData);
       console.log("✅ Response API:", response);
-      setMessage("✅ Data berhasil disimpan!");
+      toast.success("✅ Data berhasil disimpan!");
     } catch (error) {
       console.error("❌ Gagal menyimpan data:", error);
-      setMessage("❌ Gagal menyimpan data. Periksa kembali input Anda.");
+      toast.error("❌ Gagal menyimpan data. Periksa kembali input Anda.");
     }
 
     setSaving(false);
