@@ -26,7 +26,7 @@ const HistoryDetailPage = () => {
   }, [id]);
 
   return (
-    <div className="min-h-screen p-6 bg-gray-100">
+    <div className="min-h-screen p-6 ">
       <h1 className="text-3xl font-bold text-green-700 text-center mb-6">
         Detail History Laporan
       </h1>

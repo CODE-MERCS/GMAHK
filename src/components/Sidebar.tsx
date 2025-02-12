@@ -14,6 +14,7 @@
         <nav className="space-y-4">
         <NavLink
             to="/dashboard"
+            end 
             className={({ isActive }) =>
                 `flex items-center p-3 rounded-lg transition ${
                 isActive ? "bg-green-600 text-white" : "text-gray-700 hover:bg-gray-200"
@@ -25,6 +26,7 @@
             </NavLink>
             <NavLink
             to="/dashboard/laporan"
+            end
             className={({ isActive }) =>
                 `flex items-center p-3 rounded-lg transition ${
                 isActive ? "bg-green-600 text-white" : "text-gray-700 hover:bg-gray-200"
@@ -37,6 +39,7 @@
 
             <NavLink
             to="/dashboard/history"
+            end
             className={({ isActive }) =>
                 `flex items-center p-3 rounded-lg transition ${
                 isActive ? "bg-green-600 text-white" : "text-gray-700 hover:bg-gray-200"

@@ -212,6 +212,7 @@ const Laporan = () => {
     try {
       const response = await validateData(id, formDataToSend);
       setValidations((prev) => ({ ...prev, [key]: response }));
+      toast.success("Validasi berhasil");
     } catch (error) {
       toast.error("Validasi gagal");
     }
@@ -257,6 +258,7 @@ const Laporan = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-20 bg-white shadow-lg rounded-lg">
+       <Toaster position="top-center" reverseOrder={false} />
       <h1 className="text-3xl font-bold text-green-700 text-center mb-6">
         Laporan Bulanan Kependetaan
       </h1>
