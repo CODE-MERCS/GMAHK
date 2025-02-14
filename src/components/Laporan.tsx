@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import withRole from "../middleware/WithRole";
 import { saveFormData, validateData } from "../api/form";
 import toast, { Toaster } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -360,10 +361,19 @@ const Laporan = () => {
       <button
         onClick={handleSubmit}
         type="submit"
-        className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition mt-4"
+        className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition mt-4 flex items-center justify-center"
+        disabled={saving} // Agar tidak bisa diklik berulang kali
       >
-        {saving ? "Menyimpan..." : "Simpan Laporan"}
+        {saving ? (
+          <span className="flex items-center">
+            <Loader2 className="animate-spin mr-2" size={18} />
+            Sedang Memproses...
+          </span>
+        ) : (
+          "Simpan Laporan"
+        )}
       </button>
+
     </div>
   );
 };
