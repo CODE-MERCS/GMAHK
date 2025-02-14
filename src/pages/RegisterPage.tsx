@@ -161,7 +161,8 @@ const Register = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
               >
                 <option value="PENDETA">Pendeta</option>
-                <option value="JEMAAT">Jemaat</option>
+                <option value="SEKRETARIS">Sekretaris</option>
+                <option value="KETUADEPARTEMEN">Ketua Departemen</option>
               </select>
             </div>
 
@@ -190,7 +191,7 @@ const Register = () => {
           <div className="text-center mt-6 text-gray-600">
             <p>
               Sudah punya akun?{" "}
-              <Link to="/login" className="text-green-600 hover:underline">
+              <Link to="/" className="text-green-600 hover:underline">
                 Masuk sekarang
               </Link>
             </p>

@@ -13,10 +13,27 @@ const Login = () => {
 
   useEffect(() => {
     const session = getSession();
-    if (session.token) {
-      navigate("/dashboard");
+    if (session.token && session.role) {
+      redirectToRoleDashboard(session.role);
     }
-  }, [navigate]);
+  }, []);
+
+  // 🔹 Fungsi untuk navigasi sesuai role
+  const redirectToRoleDashboard = (role: string) => {
+    switch (role) {
+      case "PENDETA":
+        navigate("/dashboard", { replace: true });
+        break;
+      case "SEKRETARIS":
+        navigate("/sekretaris", { replace: true });
+        break;
+      case "KETUADEPARTEMEN":
+        navigate("/ketuadepartemen", { replace: true });
+        break;
+      default:
+        navigate("/", { replace: true }); // Redirect ke home jika role tidak valid
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,14 +52,14 @@ const Login = () => {
     setLoading(false);
 
     if (success) {
-      toast.success("✅ Login berhasil! Redirecting...", {
+      toast.success("Login berhasil! Redirecting...", {
         duration: 2000,
         style: { background: "#4CAF50", color: "#fff", fontWeight: "bold" },
       });
 
-      setTimeout(() => navigate("/dashboard"), 2000);
+      setTimeout(() => redirectToRoleDashboard(role), 2000);
     } else {
-      toast.error(message || "❌ Login gagal, coba lagi.", {
+      toast.error(message || "Login gagal, coba lagi.", {
         style: { background: "#ffcccc", color: "#b00000", fontWeight: "bold" },
       });
     }

@@ -8,7 +8,7 @@ const withRole = (Component: React.ComponentType<any>, allowedRole: string) => {
 
     // Check if token is available and the role matches the allowed role
     if (!token || role !== allowedRole) {
-      return <Navigate to="/login" state={{ from: location }} replace />;
+      return <Navigate to="/" state={{ from: location }} replace />;
     }
 
     return <Component {...props} />;

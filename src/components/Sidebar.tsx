@@ -1,5 +1,6 @@
     import { NavLink } from "react-router-dom";
     import { ClipboardList, History, LogOut } from "lucide-react";
+import { clearSession } from "../utils/session";
 
     const Sidebar = () => {
     return (
@@ -53,8 +54,8 @@
             {/* Logout Button */}
             <button
             onClick={() => {
-                localStorage.removeItem("token");
-                window.location.href = "/login";
+                clearSession();
+                window.location.href = "/";
             }}
             className="flex items-center p-3 rounded-lg text-red-600 hover:bg-gray-200 w-full"
             >

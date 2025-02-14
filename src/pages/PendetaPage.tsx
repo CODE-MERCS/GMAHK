@@ -1,6 +1,8 @@
 import { useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
+import HeroPendeta from "../components/HeroPendeta";
+import withRole from "../middleware/WithRole";
 
 const DashboardPendetaPage = () => {
   const location = useLocation();
@@ -21,15 +23,7 @@ const DashboardPendetaPage = () => {
           {/* **Tampilkan hanya di halaman Dashboard** */}
           {isDashboard && (
             <div className="flex items-center justify-center h-screen">
-              <div className="text-center bg-white p-8 rounded-lg shadow-lg">
-                <h1 className="text-4xl font-bold text-green-700">
-                  Selamat Datang, Pendeta! 🙏
-                </h1>
-                <p className="text-lg text-gray-600 mt-4">
-                  Semoga hari Anda penuh berkat dan kebijaksanaan dalam melayani
-                  jemaat.
-                </p>
-              </div>
+              <HeroPendeta/>
             </div>
           )}
 
@@ -43,4 +37,4 @@ const DashboardPendetaPage = () => {
   );
 };
 
-export default DashboardPendetaPage;
+export default withRole(DashboardPendetaPage, "PENDETA");

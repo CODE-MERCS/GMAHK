@@ -34,9 +34,6 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex space-x-6">
             {isLoggedIn ? (
               <>
-                <Link to="/dashboard" className="bg-white text-green-800 px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition">
-                  Dashboard
-                </Link>
                 <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition">
                   Logout
                 </button>
