@@ -13,14 +13,23 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-          <Route index element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="ketuadepartemen" element={<KetuaDepartemenPage />} />
-          <Route path="sekretaris" element={<SekertarisPage />} />
-          <Route path="/dashboard" element={<DashboardPendetaPage />}>
-            <Route path="laporan" element={<Laporan />} />
-            <Route path="history" element={<HistoryPage />} />
-            <Route path="/dashboard/history/:id" element={<HistoryDetailPage />} />
+        <Route index element={<Login />} />
+        <Route path="register" element={<Register />} />
+        <Route path="ketuadepartemen" element={<KetuaDepartemenPage />} >
+          <Route path="history" element={<HistoryPage />} />
+          <Route path="/ketuadepartemen/history/:id" element={<HistoryDetailPage />} />
+        </Route>
+        <Route path="sekretaris" element={<SekertarisPage />}>
+          <Route path="history" element={<HistoryPage />} />
+          <Route path="/sekretaris/history/:id" element={<HistoryDetailPage />} />
+        </Route>
+        <Route path="/dashboard" element={<DashboardPendetaPage />}>
+          <Route path="laporan" element={<Laporan />} />
+          <Route path="history" element={<HistoryPage />} />
+          <Route
+            path="/dashboard/history/:id"
+            element={<HistoryDetailPage />}
+          />
         </Route>
       </Routes>
     </Router>

@@ -50,7 +50,7 @@ const Register = () => {
       });
   
       // 🚀 Redirect setelah 2 detik
-      setTimeout(() => navigate("/login"), 2000);
+      setTimeout(() => navigate("/"), 2000);
     } else {
       // ❌ Jika ada kesalahan, tampilkan toast error
       toast.error(message, {

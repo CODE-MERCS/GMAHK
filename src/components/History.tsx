@@ -13,7 +13,18 @@ const History = () => {
   const [loading, setLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>(""); // Untuk filter bulan
   const [dataFetched, setDataFetched] = useState(false); // Menandakan data sudah di-fetch
-
+  const [role, setRole] = useState<string | null>(null);
+    useEffect(() => {
+      const userRole = localStorage.getItem("role");
+      setRole(userRole);
+    }, []);
+  
+  const getHomePath = () => {
+    if (role === "SEKRETARIS") return "/sekretaris";
+    if (role === "KETUADEPARTEMEN") return "/ketuadepartemen";
+    if (role === "PENDETA") return "/dashboard";
+    return "/"; // Default untuk PENDETA atau lainnya
+  };
   useEffect(() => {
     const fetchHistory = async () => {
       setLoading(true);
@@ -45,7 +56,7 @@ const History = () => {
 
   return (
     <div className="min-h-screen p-6">
-      <h1 className="text-3xl font-bold text-green-700 text-center mb-6">
+      <h1 className="text-3xl font-bold text-green-700 text-center my-12">
         History Laporan
       </h1>
 
@@ -73,7 +84,7 @@ const History = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {historyData.map((item, index) => (
                 <NavLink 
-                to={`/dashboard/history/${item.id}`} // ✅ Navigasi ke halaman detail berdasarkan ID
+                to={`${getHomePath()}/history/${item.id}`} // ✅ Navigasi ke halaman detail berdasarkan ID
                 key={index}
                 className="bg-white shadow-lg p-4 rounded-lg border border-gray-200 hover:shadow-xl transition"
               >
