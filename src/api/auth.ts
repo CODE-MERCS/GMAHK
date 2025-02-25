@@ -1,8 +1,9 @@
 import axios from "axios";
 import { setSession } from "../utils/session";
+import { getAuthToken } from "./form";
 
 const API_BASE_URL = "https://gmahkgas.vercel.app/auth";
-
+const PROFILE_BASE_URL = "https://gmahkgas.vercel.app/profile";
 /**
  * Fungsi untuk login user
  */
@@ -60,7 +61,13 @@ export const login = async (email: string, password: string) => {
 /**
  * Fungsi untuk mendaftarkan user baru
  */
-export const registerUser = async (email: string, name: string, phone: string, password: string, role: string) => {
+export const registerUser = async (
+  email: string,
+  name: string,
+  phone: string,
+  password: string,
+  role: string
+) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/register`, {
       email,
@@ -73,18 +80,71 @@ export const registerUser = async (email: string, name: string, phone: string, p
     console.log("Response dari API:", response.data);
 
     // ✅ Pastikan API mengembalikan message sukses
-    if (response.data && response.data.message === "User registered successfully") {
+    if (
+      response.data &&
+      response.data.message === "User registered successfully"
+    ) {
       return { success: true, message: "🎉 Registrasi berhasil!" };
     } else {
-      return { success: false, message: response.data.message || "⚠️ Registrasi gagal, coba lagi." };
+      return {
+        success: false,
+        message: response.data.message || "⚠️ Registrasi gagal, coba lagi.",
+      };
     }
   } catch (error) {
     console.error("❌ Error saat registrasi:", error);
 
     if (axios.isAxiosError(error) && error.response) {
-      return { success: false, message: error.response.data.message || "🚨 Terjadi kesalahan saat registrasi." };
+      return {
+        success: false,
+        message:
+          error.response.data.message ||
+          "🚨 Terjadi kesalahan saat registrasi.",
+      };
     }
 
-    return { success: false, message: "🌐 Gagal menghubungi server. Periksa koneksi internet Anda." };
+    return {
+      success: false,
+      message: "🌐 Gagal menghubungi server. Periksa koneksi internet Anda.",
+    };
   }
 };
+
+export const getProfile = async () => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.get(`${PROFILE_BASE_URL}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log("✅ Profile Data:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Gagal mengambil profile:", error);
+    throw error;
+  }
+};
+
+export const updateProfile = async (formData: FormData) => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.patch(`${PROFILE_BASE_URL}`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // **Jangan tambahkan "Content-Type" secara manual, browser akan menentukannya**
+      },
+    });
+
+    console.log("✅ Response API:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Gagal mengupdate profile:", error);
+    throw error;
+  }
+};
+

@@ -8,6 +8,7 @@ import Laporan from "./components/Laporan";
 import HistoryDetailPage from "./pages/HistoryDetailPage";
 import KetuaDepartemenPage from "./pages/KetuaDepartemenPage";
 import SekertarisPage from "./pages/SekertarisPage";
+import ProfilePage from "./pages/ProfilePage";
 
 const App: React.FC = () => {
   return (
@@ -18,14 +19,17 @@ const App: React.FC = () => {
         <Route path="ketuadepartemen" element={<KetuaDepartemenPage />} >
           <Route path="history" element={<HistoryPage />} />
           <Route path="/ketuadepartemen/history/:id" element={<HistoryDetailPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
         <Route path="sekretaris" element={<SekertarisPage />}>
           <Route path="history" element={<HistoryPage />} />
           <Route path="/sekretaris/history/:id" element={<HistoryDetailPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
         <Route path="/dashboard" element={<DashboardPendetaPage />}>
           <Route path="laporan" element={<Laporan />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route
             path="/dashboard/history/:id"
             element={<HistoryDetailPage />}

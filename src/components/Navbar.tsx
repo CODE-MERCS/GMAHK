@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { User, LogOut, History, Home } from "lucide-react"; // Import icon dari Lucide React
 
 const Navbar: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -27,7 +28,7 @@ const Navbar: React.FC = () => {
   const getHomePath = () => {
     if (role === "SEKRETARIS") return "/sekretaris";
     if (role === "KETUADEPARTEMEN") return "/ketuadepartemen";
-    return "/"; // Default untuk PENDETA atau lainnya
+    return "/dashboard"; // Default untuk PENDETA atau lainnya
   };
 
   return (
@@ -46,42 +47,62 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex space-x-6">
             {isLoggedIn && (
               <>
+                {/* Home */}
                 <NavLink
                   to={getHomePath()}
                   end
                   className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg font-semibold transition ${
+                    `flex items-center space-x-1 px-4 py-2 rounded-lg font-semibold transition ${
                       isActive ? "text-white bg-green-600" : "text-gray-300 hover:bg-green-700"
                     }`
                   }
                 >
-                  Home
+                  <Home size={18} />
+                  <span>Home</span>
                 </NavLink>
 
+                {/* History */}
                 <NavLink
                   to={`${getHomePath()}/history`}
                   end
                   className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg font-semibold transition ${
+                    `flex items-center space-x-1 px-4 py-2 rounded-lg font-semibold transition ${
                       isActive ? "text-white bg-green-600" : "text-gray-300 hover:bg-green-700"
                     }`
                   }
                 >
-                  History
+                  <History size={18} />
+                  <span>History</span>
                 </NavLink>
 
+                {/* Profile */}
+                <NavLink
+                  to={`${getHomePath()}/profile`}
+                  end
+                  className={({ isActive }) =>
+                    `flex items-center space-x-1 px-4 py-2 rounded-lg font-semibold transition ${
+                      isActive ? "text-white bg-green-600" : "text-gray-300 hover:bg-green-700"
+                    }`
+                  }
+                >
+                  <User size={18} />
+                  <span>Profile</span>
+                </NavLink>
+
+                {/* Logout Button */}
                 <button
                   onClick={handleLogout}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition"
+                  className="flex items-center space-x-1 bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition"
                 >
-                  Logout
+                  <LogOut size={18} />
+                  <span>Logout</span>
                 </button>
               </>
             )}
 
             {!isLoggedIn && (
               <NavLink
-                to="/"
+                to="/login"
                 className={({ isActive }) =>
                   `px-4 py-2 rounded-lg font-semibold transition ${
                     isActive ? "text-white bg-green-600" : "text-gray-300 hover:bg-green-700"

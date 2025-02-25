@@ -1,18 +1,10 @@
 import axios from "axios";
-import toast, { ToastBar, Toaster } from "react-hot-toast";
-
 const API_BASE_URL = "https://gmahkgas.vercel.app/form";
 
-/**
- * Ambil token dari localStorage
- */
-const getAuthToken = () => {
+export const getAuthToken = () => {
   return localStorage.getItem("token");
 };
 
-/**
- * Mengirim data kehadiran ke API dengan Bearer Token
- */
 export const saveFormData = async (formData: Record<string, any>) => {
   try {
     const token = getAuthToken();
