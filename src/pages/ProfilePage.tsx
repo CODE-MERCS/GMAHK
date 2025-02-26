@@ -45,21 +45,24 @@ const ProfilePage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdating(true);
-
+  
     try {
-      const formData = new FormData();
-      formData.append("email", profile.email);
-      formData.append("name", profile.name);
-      formData.append("phone", profile.phone);
-
-      await updateProfile(formData);
-      toast.success("✅ Profil berhasil diperbarui!");
+      // Jika API menerima JSON
+      const payload = {
+        email: profile.email, // Biasanya tidak perlu diupdate
+        name: profile.name || "", // Pastikan tidak null
+        phone: profile.phone || "", // Pastikan tidak null
+      };
+  
+      await updateProfile(payload);
+      toast.success("Profil berhasil diperbarui!");
     } catch (error) {
-      toast.error("❌ Gagal memperbarui profil");
+      toast.error("Gagal memperbarui profil. Coba lagi.");
     } finally {
       setUpdating(false);
     }
   };
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen">

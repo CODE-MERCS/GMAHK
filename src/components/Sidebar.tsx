@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { ClipboardList, History, LogOut, User } from "lucide-react";
+import { Home,ClipboardList, History, LogOut, User } from "lucide-react";
 import { clearSession } from "../utils/session";
 
 const Sidebar = () => {
@@ -26,7 +26,7 @@ const Sidebar = () => {
             }`
           }
         >
-          <ClipboardList className="mr-3" size={20} />
+          <Home className="mr-3" size={20} />
           Dashboard
         </NavLink>
         <NavLink

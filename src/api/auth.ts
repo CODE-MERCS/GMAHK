@@ -128,15 +128,14 @@ export const getProfile = async () => {
   }
 };
 
-export const updateProfile = async (formData: FormData) => {
+export const updateProfile = async (profileData: {name: string; phone: string; }) => {
   try {
     const token = getAuthToken();
     if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
 
-    const response = await axios.patch(`${PROFILE_BASE_URL}`, formData, {
+    const response = await axios.patch(`${PROFILE_BASE_URL}`, profileData, {
       headers: {
         Authorization: `Bearer ${token}`,
-        // **Jangan tambahkan "Content-Type" secara manual, browser akan menentukannya**
       },
     });
 
