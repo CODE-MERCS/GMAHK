@@ -256,14 +256,15 @@ const getAllFormData = async (req, res) => {
 // ✅ GET: Mengambil data form berdasarkan bulan
 const getFormDataByBulan = async (req, res) => {
   try {
-    const { bulan } = req.params;
+    const { bulan, tahun } = req.params;
     const formData = await prisma.formData.findMany({
-      where: { bulan },
+      where: { 
+        bulan: bulan,
+        tahun: parseInt(tahun) 
+      },
       include: {
         user: {
-          select: {
-            name: true // Hanya ambil nama user
-          }
+          select: { name: true }
         }
       }
     });

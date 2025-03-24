@@ -21,7 +21,7 @@ router.post(
 );
 
 router.get("/data", authMiddleware, getAllFormData);
-router.get("/data/bulan/:bulan", authMiddleware, getFormDataByBulan);
+router.get("/data/:bulan/:tahun", authMiddleware, getFormDataByBulan);
 router.get("/data/:id", authMiddleware, getFormDataById);
 
 

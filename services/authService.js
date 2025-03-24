@@ -29,7 +29,19 @@ const findUserByEmailOrPhone = async (email, phone) => {
   return user;
 };
 
+const getPendetaNames = async () => {
+  return prisma.user.findMany({
+    where: {
+      role: 'PENDETA'
+    },
+    select: {
+      id: true,
+      name: true
+    }
+  });
+};
+
 module.exports = {
   registerUser,
-  findUserByEmailOrPhone,
+  findUserByEmailOrPhone,getPendetaNames,
 };

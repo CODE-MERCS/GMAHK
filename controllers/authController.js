@@ -1,4 +1,4 @@
-const { registerUser, findUserByEmailOrPhone } = require('../services/authService');
+const { registerUser, findUserByEmailOrPhone , getPendetaNames: getPendetaNamesService } = require('../services/authService');
 const { generateToken } = require('../configs/jwt');
 const bcrypt = require('bcryptjs');
 
@@ -21,6 +21,27 @@ const register = async (req, res) => {
     res.status(201).json({ message: 'User registered successfully', user });
   } catch (error) {
     res.status(500).json({ message: 'Error registering user', error: error.message });
+  }
+};
+
+const getPendetaNames = async (req, res) => {
+  try {
+    // Panggil fungsi service dengan alias
+    const pendetaList = await getPendetaNamesService();
+    
+    if(pendetaList.length === 0) {
+      return res.status(404).json({ message: "Tidak ada data pendeta" });
+    }
+
+    res.status(200).json({
+      message: "Daftar nama pendeta berhasil diambil",
+      data: pendetaList
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: "Gagal mengambil data pendeta",
+      error: error.message 
+    });
   }
 };
 
@@ -56,5 +77,5 @@ const logout = (req, res) => {
 module.exports = {
   register,
   login,
-  logout,
+  logout,getPendetaNames,
 };
