@@ -1,58 +1,65 @@
 import React from "react";
+import { AlertCircle, BookOpen } from "lucide-react";
 
 const Hero: React.FC = () => {
   return (
-    <section
-      className="relative h-screen flex flex-col justify-center items-center text-center px-6 sm:px-12 lg:px-20"
-      style={{
-        backgroundImage: "url('gereja.png')", // Foto sebagai background
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed", // Efek Parallax
-      }}
-    >
-      {/* Overlay Gelap untuk Kontras */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-
-      {/* Konten Hero */}
-      <div className="relative max-w-4xl px-6 text-white animate-fade-in">
-        <h1 className="text-6xl font-extrabold drop-shadow-lg">
-          Selamat Datang di <span className="text-yellow-400">GMAHK</span>
-        </h1>
-        <p className="text-lg mt-5 leading-relaxed max-w-3xl mx-auto">
-          Kami hadir untuk melayani, berbagi kasih, dan menyampaikan kabar baik kepada semua orang.
-        </p>
-      </div>
-
-      {/* Bagian Visi & Misi */}
-      <div className="relative max-w-6xl mx-auto mt-16 text-white">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-lg">
-          {/* Visi */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h3 className="text-3xl font-semibold text-yellow-400 mb-4 flex items-center gap-2">
-              ✨ Visi
-            </h3>
-            <p className="text-gray-200 leading-relaxed">
-              Selaras dengan wahyu Alkitab, Gereja Masehi Advent Hari Ketujuh melihat sebagai
-              klimaks dari rencana Allah untuk memulihkan segenap ciptaan-Nya agar selaras dengan
-              kehendak-Nya.
-            </p>
+<div className="container mx-auto py-10 px-4 min-h-screen flex flex-col justify-center">
+{/* Alert Box */}
+      <div className="bg-green-100 p-4 rounded-lg mb-8">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <AlertCircle className="h-6 w-6 text-yellow-500" />
           </div>
-
-          {/* Misi */}
-          <div className="flex flex-col items-center md:items-end text-center md:text-right">
-            <h3 className="text-3xl font-semibold text-yellow-400 mb-4 flex items-center gap-2">
-              🌍 Misi
-            </h3>
-            <p className="text-gray-200 leading-relaxed">
-              Menjadikan murid Yesus Kristus, yang hidup sebagai saksi-Nya yang penuh kasih
-              dan memberitakan kepada semua orang Injil yang kekal dari Pekabaran Tiga Malaikat
-              (Matius 28:18–20).
+          <div className="ml-3">
+            <p className="text-yellow-700 font-medium">
+            Pastikan semua laporan sudah diterima untuk bukti pendeta sudah mengirim laporan dan bisa nemerima gaji
             </p>
           </div>
         </div>
       </div>
-    </section>
+
+      {/* Content Grid */}
+      <div className="grid md:grid-cols-3 gap-6">
+        {/* Laporan Bulan Ini */}
+        <div className="bg-green-100 p-6 rounded-lg">
+          <h2 className="text-xl font-bold text-center text-green-700 mb-4">
+            Laporan Bulan Ini
+          </h2>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <p className="text-yellow-600 font-medium text-center">
+              Cek dan Terima laporan dari pendeta yang sudah mengirim laporan mereka di bulan ini.
+            </p>
+          </div>
+        </div>
+
+        {/* Riwayat */}
+        <div className="bg-green-100 p-6 rounded-lg">
+          <h2 className="text-xl font-bold text-center text-green-700 mb-4">
+            Riwayat
+          </h2>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <p className="text-yellow-600 font-medium text-center">
+              Anda dapat melihat laporan pendeta - pendeta yang sudah anda terima di sini.
+            </p>
+          </div>
+        </div>
+
+        {/* Ayat Bulan Ini */}
+        <div className="bg-green-100 p-6 rounded-lg">
+          <div className="flex justify-center mb-2">
+            <BookOpen className="h-8 w-8 text-yellow-600" />
+          </div>
+          <h2 className="text-xl font-bold text-center text-yellow-600 mb-2">
+            Ayat Bulan Ini
+          </h2>
+          <p className="text-green-800">
+            <span className="font-semibold">Yesaya 41:10</span>
+            <br />
+            janganlah takut, sebab Aku menyertai engkau, janganlah bimbang, sebab Aku ini Allahmu; Aku akan meneguhkan, bahkan akan menolong engkau; Aku akan memegang engkau dengan tangan kanan-Ku yang membawa kemenangan.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 

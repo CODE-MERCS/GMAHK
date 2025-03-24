@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 import HeroPendeta from "../components/HeroPendeta";
 import withRole from "../middleware/WithRole";
+import AppBar from "../components/AppBar";
 
 const DashboardPendetaPage = () => {
   const location = useLocation();
@@ -14,22 +15,27 @@ const DashboardPendetaPage = () => {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="ml-64 w-full p-6">
-        <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
-          <h1 className="text-3xl font-bold text-green-700 mb-4">
-            Dashboard Pendeta
-          </h1>
+      <div className="ml-64 w-full">
+        {/* Add AppBar at the top */}
+        <AppBar />
+        
+        <div className="p-6">
+          <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+            <h1 className="text-3xl font-bold text-green-700 mb-4">
+              Dashboard Pendeta
+            </h1>
 
-          {/* **Tampilkan hanya di halaman Dashboard** */}
-          {isDashboard && (
-            <div className="flex items-center justify-center h-screen">
-              <HeroPendeta/>
+            {/* **Tampilkan hanya di halaman Dashboard** */}
+            {isDashboard && (
+              <div className="flex items-center justify-center h-screen">
+                <HeroPendeta/>
+              </div>
+            )}
+
+            {/* **Outlet untuk halaman lain seperti Laporan dan History** */}
+            <div className="mt-6">
+              <Outlet />
             </div>
-          )}
-
-          {/* **Outlet untuk halaman lain seperti Laporan dan History** */}
-          <div className="mt-6">
-            <Outlet />
           </div>
         </div>
       </div>

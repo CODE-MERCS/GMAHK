@@ -1,49 +1,63 @@
 import React from "react";
+import { AlertCircle, BookOpen } from "lucide-react";
 
 const HeroPendeta: React.FC = () => {
   return (
-    <section
-      className="relative h-screen flex flex-col justify-center items-center text-center px-6 sm:px-12 lg:px-20"
-    >
-       {/* Konten Hero */}
-      <div className="relative max-w-4xl px-6 text-black animate-fade-in">
-        <h1 className="text-6xl font-extrabold drop-shadow-lg">
-          Selamat Datang di <span className="text-yellow-400">GMAHK</span>
-        </h1>
-        <p className="text-lg mt-5 leading-relaxed max-w-3xl mx-auto">
-          Kami hadir untuk melayani, berbagi kasih, dan menyampaikan kabar baik kepada semua orang.
-        </p>
-      </div>
-
-      {/* Bagian Visi & Misi */}
-      <div className="relative max-w-6xl mx-auto mt-16 text-black">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-lg">
-          {/* Visi */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h3 className="text-3xl font-semibold text-yellow-400 mb-4 flex items-center gap-2">
-              ✨ Visi
-            </h3>
-            <p className="text-black leading-relaxed">
-              Selaras dengan wahyu Alkitab, Gereja Masehi Advent Hari Ketujuh melihat sebagai
-              klimaks dari rencana Allah untuk memulihkan segenap ciptaan-Nya agar selaras dengan
-              kehendak-Nya.
-            </p>
+    <div className="container mx-auto py-10 px-4">
+      {/* Alert Box */}
+      <div className="bg-green-100 p-4 rounded-lg mb-8">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <AlertCircle className="h-6 w-6 text-yellow-500" />
           </div>
-
-          {/* Misi */}
-          <div className="flex flex-col items-center md:items-end text-center md:text-right">
-            <h3 className="text-3xl font-semibold text-yellow-400 mb-4 flex items-center gap-2">
-              🌍 Misi
-            </h3>
-            <p className="text-black leading-relaxed">
-              Menjadikan murid Yesus Kristus, yang hidup sebagai saksi-Nya yang penuh kasih
-              dan memberitakan kepada semua orang Injil yang kekal dari Pekabaran Tiga Malaikat
-              (Matius 28:18-20).
+          <div className="ml-3">
+            <p className="text-yellow-700 font-medium">
+              Wajib memberikan laporan bulanan untuk menerima slip gaji.
+              Laporan sudah bisa dikumpulkan 3 hari terakhir sebelum perpindahan bulan dan 3 hari
+              setelah perpindahan bulan.
             </p>
           </div>
         </div>
       </div>
-    </section>
+
+      {/* Content Grid */}
+      <div className="grid md:grid-cols-3 gap-6">
+        {/* Ayat Bulan Ini */}
+        <div className="bg-green-100 p-6 rounded-lg">
+          <div className="flex justify-center mb-4">
+            <BookOpen className="h-12 w-12 text-green-700" />
+          </div>
+          <h2 className="text-xl font-bold text-center text-yellow-600 mb-4">
+            Ayat Bulan Ini
+          </h2>
+          <p className="text-green-800">
+            <span className="font-semibold">Yesaya 41:10</span>
+            <br />
+            janganlah takut, sebab Aku menyertai engkau, janganlah bimbang, sebab Aku ini Allahmu; Aku akan meneguhkan, bahkan akan menolong engkau; Aku akan memegang engkau dengan tangan kanan-Ku yang membawa kemenangan.
+          </p>
+        </div>
+
+        {/* Visi */}
+        <div className="bg-green-100 p-6 rounded-lg">
+          <h2 className="text-xl font-bold text-center text-yellow-600 mb-4">
+            Visi
+          </h2>
+          <p className="text-green-800 text-center">
+            Selaras dengan wahyu Alkitab, Gereja Masehi Advent Hari Ketujuh melihat sebagai klimaks dari rencana Allah untuk memulihkan segenap ciptaan-Nya agar selaras dengan kehendak-Nya.
+          </p>
+        </div>
+
+        {/* Misi */}
+        <div className="bg-green-100 p-6 rounded-lg">
+          <h2 className="text-xl font-bold text-center text-yellow-600 mb-4">
+            Misi
+          </h2>
+          <p className="text-green-800 text-center">
+            Menjadikan murid Yesus Kristus, yang hidup sebagai saksi-Nya yang penuh kasih dan memberitakan kepada semua orang Injil yang kekal dari Pekabaran Tiga Malaikat (Matius 28:18-20).
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 
