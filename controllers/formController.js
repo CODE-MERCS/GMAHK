@@ -1,4 +1,4 @@
-const { saveFormData } = require("../services/formService");
+const { saveFormData,saveDraft,deleteDraft,moveDraftToForm } = require("../services/formService");
 const { sendWhatsAppNotification } = require('../services/notificationService');
 const { validateImageWithGPT } = require("../services/gptValidation");
 const { uploadImageToImageKit } = require("../services/imageKitService");
@@ -130,6 +130,9 @@ const saveFormDataToDB = async (req, res) => {
     const userId = req.user.id;
     const { bulan } = req.body;
 
+    const { tahun } = req.body;
+
+
     // Validasi bulan
     if (!bulan || typeof bulan !== 'string' || bulan.trim() === '') {
       return res.status(400).json({ 
@@ -137,11 +140,17 @@ const saveFormDataToDB = async (req, res) => {
       });
     }
 
+if (!tahun || isNaN(tahun)) {
+  return res.status(400).json({ 
+    message: "Tahun wajib diisi dan harus angka"
+  });
+}
     // Satukan data
     const finalData = {
       ...inputData,
       userId,
       bulan: bulan.trim(),
+      tahun: tahun.trim(),
       hadirSabat2: req.body.hadirSabat2,
       hadirSabat7: req.body.hadirSabat7,
       persentaseKehadiranBulan: req.body.persentaseKehadiranBulan,
@@ -314,8 +323,125 @@ const getFormDataById = async (req, res) => {
   }
 };
 
+const saveToDraft = async (req, res) => {
+  try {
+    const userId = req.user.id; // Sudah numerik setelah middleware diperbaiki
+    const { bulan, tahun } = req.body;
+
+    // Validasi user (pastikan userId adalah angka)
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    // Validasi input
+    if (!bulan || typeof bulan !== 'string') {
+      return res.status(400).json({ message: "Field bulan wajib diisi" });
+    }
+    
+    if (!tahun || isNaN(tahun)) {
+      return res.status(400).json({ message: "Field tahun wajib diisi dan harus angka" });
+    }
+
+    const draftData = {
+      ...req.body,
+      userId,
+      bulan: bulan.trim(),
+      tahun: parseInt(tahun, 10) // Konversi ke number
+    };
+
+    const draft = await saveDraft(draftData);
+    
+    res.status(201).json({
+      message: "Draft berhasil disimpan",
+      data: draft
+    });
+  } catch (error) {
+    console.error("Error in saveToDraft:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// ✅ POST: Kirim Draft ke FormData
+const sendDraftToForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = await moveDraftToForm(id);
+    
+    res.status(200).json({
+      message: "Draft berhasil dikirim",
+      data: formData
+    });
+  } catch (error) {
+    console.error("Error in sendDraftToForm:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// ✅ GET: Ambil semua draft
+const getAllDrafts = async (req, res) => {
+  try {
+    const drafts = await prisma.draft.findMany({
+      include: { user: { select: { name: true } } } // <- Kurung ditutup dengan benar
+    });
+    
+    res.status(200).json({ 
+      message: "Drafts retrieved", 
+      data: drafts.map(d => ({ ...d, username: d.user.name })) 
+    });
+  } catch (error) {
+    console.error("Error in getAllDrafts:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// ✅ GET: Draft by bulan
+const getDraftByBulan = async (req, res) => {
+  try {
+    const drafts = await prisma.draft.findMany({
+      where: { bulan: req.params.bulan },
+      include: { user: { select: { name: true } } }
+    })
+    
+    res.status(200).json({ 
+      message: "Drafts retrieved", 
+      data: drafts.map(d => ({ ...d, username: d.user.name })) 
+    });
+  } catch (error) {
+    console.error("Error in getDraftByBulan:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// ✅ GET: Draft by ID
+const getDraftById = async (req, res) => {
+  try {
+    const draft = await prisma.draft.findUnique({
+      where: { id: parseInt(req.params.id, 10) },
+      include: { user: { select: { name: true } } }
+    });
+    
+    res.status(200).json({ 
+      message: "Draft retrieved", 
+      data: { ...draft, username: draft.user.name } 
+    });
+  } catch (error) {
+    console.error("Error in getDraftById:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
 
 
 module.exports = { validateFormData, 
   saveFormDataToDB,  getFormDataByBulan,
-  getAllFormData,getFormDataById,};
+  getAllFormData,getFormDataById, saveToDraft,
+  sendDraftToForm,
+  getAllDrafts,
+  getDraftByBulan,
+  getDraftById,};
