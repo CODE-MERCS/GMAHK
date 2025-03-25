@@ -111,24 +111,39 @@ export const getHistoryById = async (id: string | undefined) => {
   }
 };
 
-export const getHistoryByMonth = async (bulan: string) => {
+export const getHistoryByMonth = async (bulan: string, tahun: number | string) => {
   try {
     const token = getAuthToken();
     if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
 
-    const response = await axios.get(`${API_BASE_URL}/data/bulan/${bulan}`, {
+    // Use the correct endpoint format with both bulan and tahun
+    const response = await axios.get(`${API_BASE_URL}/data/bulan/${bulan}/${tahun}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
-    console.log(`✅ History Data for Month (${bulan}):`, response.data);
+    console.log(`✅ History Data for ${bulan} ${tahun}:`, response.data);
     return response.data;
   } catch (error) {
-    console.error(`❌ Gagal mengambil history bulan ${bulan}:`, error);
-    throw error;
+    // Try fallback if the first endpoint format fails
+    try {
+      const token = getAuthToken();
+      const response = await axios.get(`${API_BASE_URL}/data/${bulan}/${tahun}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      console.log(`✅ History Data for ${bulan} ${tahun} (fallback):`, response.data);
+      return response.data;
+    } catch (fallbackError) {
+      console.error(`❌ Gagal mengambil history untuk ${bulan} ${tahun}:`, error);
+      throw error;
+    }
   }
 };
+
 
 /**
  * Mengambil detail draft berdasarkan ID
@@ -218,7 +233,7 @@ export const saveToDraft = async (formData: Record<string, any>) => {
 
     console.log("📤 Saving draft data:", finalData);
 
-    const response = await axios.post(`${API_BASE_URL}/draft/save`, finalData, {
+    const response = await axios.post(`${API_BASE_URL}/draft`, finalData, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
