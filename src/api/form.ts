@@ -130,3 +130,137 @@ export const getHistoryByMonth = async (bulan: string) => {
   }
 };
 
+/**
+ * Mengambil detail draft berdasarkan ID
+ */
+export const getDraftById = async (id: number) => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.get(`${API_BASE_URL}/draft/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(`❌ Gagal mengambil draft ${id}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Mengambil daftar draft
+ */
+export const getAllDrafts = async () => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.get(`${API_BASE_URL}/draft`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("❌ Gagal mengambil daftar draft:", error);
+    throw error;
+  }
+};
+
+/**
+ * Mengirim draft ke form
+ */
+export const sendDraftToForm = async (draftId: number) => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.post(
+      `${API_BASE_URL}/draft/send/${draftId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(`❌ Gagal mengirim draft ${draftId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Menyimpan data ke draft
+ */
+export const saveToDraft = async (formData: Record<string, any>) => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    // Format data
+    const finalData = {
+      bulan: formData["bulan"] ? formData["bulan"].toLowerCase().trim() : "",
+      tahun: formData["tahun"] ? Number(formData["tahun"]) : new Date().getFullYear(),
+      ...Object.fromEntries(
+        Object.entries(formData)
+          .filter(([key]) => key !== "bulan" && key !== "tahun")
+          .map(([key, value]) => [key, Number(value) || 0])
+      ),
+    };
+
+    console.log("📤 Saving draft data:", finalData);
+
+    const response = await axios.post(`${API_BASE_URL}/draft/save`, finalData, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("❌ Gagal menyimpan draft:", error);
+    throw error;
+  }
+};
+
+/**
+ * Validasi field draft berdasarkan ID kategori dan ID draft
+ */
+export const validateDraftField = async (categoryId: number, draftId: number, formData: FormData) => {
+  if (categoryId < 1 || categoryId > 13) {
+    throw new Error("ID kategori harus antara 1-13");
+  }
+
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.post(
+      `${API_BASE_URL}/draft/${draftId}/validate/${categoryId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    console.log(`✅ Validasi draft field (category ${categoryId}) sukses:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`❌ Error validating draft field (category ${categoryId}):`, error);
+    throw error;
+  }
+};
+
+

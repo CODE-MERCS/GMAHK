@@ -5,6 +5,8 @@ import DashboardPendetaPage from "./pages/PendetaPage";
 import Register from "./pages/RegisterPage";
 import HistoryPage from "./pages/HistoryPage";
 import Laporan from "./components/Laporan";
+import Draft from "./components/draft";
+import DraftDetailPage from "./components/DraftDetailPage";
 import HistoryDetailPage from "./pages/HistoryDetailPage";
 import KetuaDepartemenPage from "./pages/KetuaDepartemenPage";
 import SekertarisPage from "./pages/SekertarisPage";
@@ -30,6 +32,10 @@ const App: React.FC = () => {
           <Route path="laporan" element={<Laporan />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="draft" element={<Draft />} />
+          <Route path="draft/:id" element={<DraftDetailPage />} /> {/* ✅ Pindahkan ke sini */}
+
+
           <Route
             path="/dashboard/history/:id"
             element={<HistoryDetailPage />}

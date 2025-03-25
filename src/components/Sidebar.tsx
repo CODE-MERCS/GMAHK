@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home,ClipboardList, History, LogOut, User } from "lucide-react";
+import { Home,ClipboardList, History, LogOut, User, FileText } from "lucide-react";
 import { clearSession } from "../utils/session";
 
 const Sidebar = () => {
@@ -42,6 +42,21 @@ const Sidebar = () => {
         >
           <ClipboardList className="mr-3" size={20} />
           Laporan
+        </NavLink>
+
+        <NavLink
+          to="/dashboard/draft"
+          end
+          className={({ isActive }) =>
+            `flex items-center p-3 rounded-lg transition ${
+              isActive
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-200"
+            }`
+          }
+        >
+          <FileText className="mr-3" size={20} /> {/* Ikon Draft */}
+          Draft
         </NavLink>
 
         <NavLink
