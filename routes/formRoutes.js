@@ -5,7 +5,7 @@ const { validateFormData,
   sendDraftToForm,
   getAllDrafts,
   getDraftByBulan,
-  getDraftById,  } = require("../controllers/formController");
+  getDraftById, validateDraftField } = require("../controllers/formController");
 const { authMiddleware, roleMiddleware } = require("../middlewares/authMiddleware");
 const multer = require("multer");
 
@@ -18,6 +18,15 @@ router.post(
   roleMiddleware("PENDETA"), 
   upload.single("image"), 
   validateFormData()
+);
+
+// Draft-specific validation route
+router.post(
+  "/draft/:draftId/validate/:category", 
+  authMiddleware, 
+  roleMiddleware("PENDETA"), 
+  upload.single("image"), 
+  validateDraftField
 );
 
 router.get("/data", authMiddleware, getAllFormData);

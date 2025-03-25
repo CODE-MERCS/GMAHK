@@ -2,6 +2,7 @@ const { saveFormData,saveDraft,deleteDraft,moveDraftToForm } = require("../servi
 const { sendWhatsAppNotification } = require('../services/notificationService');
 const { validateImageWithGPT } = require("../services/gptValidation");
 const { uploadImageToImageKit } = require("../services/imageKitService");
+const categoryMappings = require("../configs/categoryMapping");
 const prisma = require("../configs/prisma");
 
 
@@ -87,6 +88,95 @@ const validateFormData = () => async (req, res) => {
     });
   } catch (error) {
     console.error(`Error in validateFormData:`, error.message);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+// New function for validating draft fields
+const validateDraftField = async (req, res) => {
+  try {
+    const { category, draftId } = req.params;
+    const mapping = categoryMapping[category];
+    
+    if (!mapping) {
+      return res.status(400).json({ message: 'Kategori tidak valid' });
+    }
+
+    // Check if draft exists
+    const draft = await prisma.draft.findUnique({
+      where: { id: parseInt(draftId, 10) }
+    });
+
+    if (!draft) {
+      return res.status(404).json({ message: 'Draft tidak ditemukan' });
+    }
+
+    const count = req.body[mapping.field];
+    const file = req.file;
+
+    // Handle optional fields
+    if (mapping.optional) {
+      if (!count || count === '0') {
+        // Update draft with zero value for optional field
+        await prisma.draft.update({
+          where: { id: parseInt(draftId, 10) },
+          data: {
+            [mapping.field]: 0,
+            [mapping.imageField]: null
+          }
+        });
+
+        return res.status(200).json({
+          message: `Field optional ${mapping.field} di-set ke 0`,
+          skipped: true,
+          draft: await prisma.draft.findUnique({
+            where: { id: parseInt(draftId, 10) }
+          })
+        });
+      }
+    }
+
+    if (!count || isNaN(count)) {
+      return res.status(400).json({ message: `Field ${mapping.field} harus berupa angka.` });
+    }
+
+    if (!file) {
+      return res.status(400).json({ message: "Gambar diperlukan untuk validasi." });
+    }
+
+    // Upload and validate image
+    console.log(`Uploading image for draft ${draftId}, category ${category}...`);
+    const imageUrl = await uploadImageToImageKit(file);
+
+    console.log("Validating with GPT...");
+    const validationResult = await validateImageWithGPT(imageUrl, parseInt(count, 10));
+
+    // Update draft with validated field data
+    if (validationResult.valid) {
+      await prisma.draft.update({
+        where: { id: parseInt(draftId, 10) },
+        data: {
+          [mapping.field]: parseInt(count, 10),
+          [mapping.imageField]: imageUrl
+        }
+      });
+    }
+
+    // Get updated draft
+    const updatedDraft = await prisma.draft.findUnique({
+      where: { id: parseInt(draftId, 10) }
+    });
+
+    res.status(200).json({
+      message: `Validation ${validationResult.valid ? 'successful' : 'failed'} untuk kategori ${category}`,
+      valid: validationResult.valid,
+      category,
+      imageUrl,
+      count: parseInt(count, 10),
+      draft: updatedDraft
+    });
+  } catch (error) {
+    console.error(`Error in validateDraftField:`, error.message);
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
@@ -370,15 +460,97 @@ const saveToDraft = async (req, res) => {
 const sendDraftToForm = async (req, res) => {
   try {
     const { id } = req.params;
-    const formData = await moveDraftToForm(id);
-    
-    res.status(200).json({
-      message: "Draft berhasil dikirim",
-      data: formData
+
+    // Get the draft
+    const draft = await prisma.draft.findUnique({
+      where: { id: parseInt(id, 10) }
     });
+
+    if (!draft) {
+      return res.status(404).json({ message: "Draft tidak ditemukan" });
+    }
+
+    // Identify required fields based on categoryMapping
+    const requiredFields = [];
+    
+    // Loop through all category mappings to find required fields
+    for (const [categoryId, config] of Object.entries(categoryMapping)) {
+      if (!config.optional) {
+        requiredFields.push({
+          categoryId,
+          field: config.field,
+          imageField: config.imageField
+        });
+      }
+    }
+
+    // Check if all required fields are populated in the draft
+    const invalidFields = [];
+    
+    for (const { field, imageField } of requiredFields) {
+      const fieldValue = draft[field];
+      const imageUrl = draft[imageField];
+      
+      if (!fieldValue || fieldValue <= 0 || !imageUrl) {
+        invalidFields.push({
+          field,
+          status: "Belum divalidasi"
+        });
+      }
+    }
+
+    // Return error if required fields are missing
+    if (invalidFields.length > 0) {
+      return res.status(400).json({
+        message: "Validasi gagal untuk field wajib",
+        invalidFields
+      });
+    }
+
+    // Move draft to FormData
+    try {
+      const formData = await moveDraftToForm(id);
+      
+      // Send notifications
+      try {
+        const recipients = await prisma.user.findMany({
+          where: {
+            role: { in: ['SEKRETARIS', 'PENDETA'] },
+            phone: { not: null, startsWith: '08' }
+          },
+          select: { phone: true, name: true, role: true }
+        });
+
+        const message = `Form telah berhasil di Inputkan pada bulan ${formData.bulan}`;
+        
+        const sendPromises = recipients.map(async (user) => {
+          try {
+            await sendWhatsAppNotification(user.phone, message);
+            console.log(`Notifikasi terkirim ke ${user.name} (${user.role}) - ${user.phone}`);
+          } catch (error) {
+            console.error(`Gagal mengirim ke ${user.phone}:`, error.message);
+          }
+        });
+
+        await Promise.all(sendPromises);
+      } catch (error) {
+        console.error('Error dalam proses notifikasi:', error);
+        // Continue even if notification fails
+      }
+
+      // Return success response
+      res.status(200).json({
+        message: "Draft berhasil dikirim ke form",
+        data: formData
+      });
+    } catch (error) {
+      return res.status(400).json({ 
+        message: error.message 
+      });
+    }
   } catch (error) {
     console.error("Error in sendDraftToForm:", error.message);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -445,4 +617,4 @@ module.exports = { validateFormData,
   sendDraftToForm,
   getAllDrafts,
   getDraftByBulan,
-  getDraftById,};
+  getDraftById,validateDraftField};

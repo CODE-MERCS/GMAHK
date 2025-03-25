@@ -1,4 +1,6 @@
 const prisma = require("../configs/prisma");
+const categoryMapping = require("../configs/categoryMapping");
+
 
 const saveFormData = async (data) => {
   const formData = await prisma.formData.create({
@@ -26,12 +28,26 @@ const moveDraftToForm = async (draftId) => {
   const draft = await prisma.draft.findUnique({
     where: { id: parseInt(draftId, 10) }
   });
+  
+  if (!draft) {
+    throw new Error("Draft tidak ditemukan");
+  }
 
+  // Validation happens in the controller, so we just move the data
+  
+  // Extract draft data without the ID
+  const { id, ...draftData } = draft;
+  
+  // Create form data with the draft data
   const formData = await prisma.formData.create({
-    data: { ...draft, id: undefined } // Hapus ID agar dibuat baru
+    data: draftData
   });
 
-  await deleteDraft(draftId);
+  // Delete the draft
+  await prisma.draft.delete({ 
+    where: { id: parseInt(draftId, 10) } 
+  });
+
   return formData;
 };
 
