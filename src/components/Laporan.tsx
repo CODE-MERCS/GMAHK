@@ -1,7 +1,7 @@
 import { useState, useEffect,  } from "react";
 import { useNavigate } from "react-router-dom";
 import withRole from "../middleware/WithRole";
-import { saveFormData, validateData } from "../api/form";
+import { saveFormData, validateData , saveToDraft } from "../api/form";
 import toast, { Toaster } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
@@ -11,6 +11,11 @@ const months = [
 ];
 // **FORMAT FORM YANG DI-SUBMIT**
 const formStructure = [
+  {
+    key: "tahun",
+    label: "Tahun",
+    validate: false,
+  },
   {
     key: "bulan",
     label: "Bulan",
@@ -174,6 +179,8 @@ const Laporan = () => {
   const [validations, setValidations] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
+  const [draftSaving, setDraftSaving] = useState(false);
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -198,6 +205,44 @@ const Laporan = () => {
       setSelectedFiles({ ...selectedFiles, [key]: e.target.files[0] });
     }
   };
+
+// Tambahkan fungsi ini sebelum handleSubmit
+const handleSaveDraft = async () => {
+  setDraftSaving(true);
+
+  // Validasi tahun dan bulan
+  if (!formData["tahun"] || isNaN(Number(formData["tahun"]))) {
+    toast.error("⚠️ Harap masukkan tahun yang valid!");
+    setDraftSaving(false);
+    return;
+  }
+
+  if (!formData["bulan"] || typeof formData["bulan"] !== "string") {
+    toast.error("⚠️ Harap pilih bulan sebelum menyimpan draft!");
+    setDraftSaving(false);
+    return;
+  }
+
+  const finalData = {
+    tahun: Number(formData["tahun"]),
+    bulan: formData["bulan"].trim().toLowerCase(),
+    ...Object.fromEntries(
+      Object.entries(formData)
+        .filter(([key]) => key !== "tahun" && key !== "bulan")
+        .map(([key, value]) => [key, Number(value) || 0])
+    ),
+  };
+
+  try {
+    await saveToDraft(finalData);
+    toast.success("✅ Draft berhasil disimpan!");
+  } catch (error) {
+    toast.error("❌ Gagal menyimpan draft");
+  }
+
+  setDraftSaving(false);
+};
+
 
   // **🔹 Handle Validasi**
   const handleValidation = async (id: number, key: string) => {
@@ -224,6 +269,14 @@ const Laporan = () => {
     e.preventDefault();
     setSaving(true);
 
+     // 🔹 Validasi tahun
+     if (!formData["tahun"] || isNaN(Number(formData["tahun"]))) {
+      toast.error("⚠️ Harap masukkan tahun yang valid!");
+      setSaving(false);
+      return;
+    }
+
+
     // 🔹 Pastikan bulan valid
     if (!formData["bulan"] || typeof formData["bulan"] !== "string") {
       toast.error("⚠️ Harap pilih bulan sebelum menyimpan!");
@@ -233,12 +286,12 @@ const Laporan = () => {
 
     // 🔹 Format data untuk API
     const finalData = {
-      bulan: formData["bulan"].trim().toLowerCase(), // Pastikan format string tanpa spasi ekstra
+      tahun: Number(formData["tahun"]), // Konversi ke number
+      bulan: formData["bulan"].trim().toLowerCase(),
       ...Object.fromEntries(
-        Object.entries(formData).map(([key, value]) => [
-          key,
-          key !== "bulan" ? Number(value) || 0 : value,
-        ])
+        Object.entries(formData)
+          .filter(([key]) => key !== "tahun" && key !== "bulan")
+          .map(([key, value]) => [key, Number(value) || 0])
       ),
     };
 
@@ -373,6 +426,21 @@ const Laporan = () => {
           "Simpan Laporan"
         )}
       </button>
+
+      <button
+  onClick={handleSaveDraft}
+  className="w-full bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition mt-2 flex items-center justify-center"
+  disabled={draftSaving}
+>
+  {draftSaving ? (
+    <span className="flex items-center">
+      <Loader2 className="animate-spin mr-2" size={18} />
+      Menyimpan Draft...
+    </span>
+  ) : (
+    "Simpan sebagai Draft"
+  )}
+</button>
 
     </div>
   );
