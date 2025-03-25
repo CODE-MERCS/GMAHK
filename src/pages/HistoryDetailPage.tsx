@@ -30,23 +30,28 @@ const HistoryDetailPage = () => {
     return month.charAt(0).toUpperCase() + month.slice(1).toLowerCase();
   };
 
-  // Data fields to display in grid layout with their titles
-  const dataFields = [
+  // Priority fields to display first (the 5 required fields with their images)
+  const priorityFields = [
+    { key: "perlawatanJemaat", title: "Jumlah Perlawatan Kepada Anggota Jemaat (Jiwa)", image: "fotoPerlawatanJemaat" },
+    { key: "perlawatannonSDA", title: "Jumlah Perlawatan Kepada Non SDA", image: "fotoPerlawatannonSDA" },
+    { key: "perlawatanPendeta", title: "Jumlah Perlawatan Kepada Pendeta/Pemuka Anggota Lainnya", image: "fotoPerlawatanPendeta" },
+    { key: "baptisanBulanIni", title: "Baptisan Bulan Ini", image: "fotoBaptisanBulanIni" },
+    { key: "komiteJemaat", title: "Jumlah Komite Jemaat (Paling kurang 1 kali dalam sebulan)", image: "fotoKomiteJemaat" },
+  ];
+
+  // Remaining fields to display after priority fields
+  const remainingFields = [
     { key: "hadirSabat2", title: "Anggota yang hadir Sabat ke-2 dalam Triwulan Berjalan" },
     { key: "hadirSabat7", title: "Anggota yang hadir Sabat ke-7 dalam Triwulan Berjalan" },
     { key: "persentaseKehadiranBulan", title: "Persentase Kehadiran Per Bulan" },
     { key: "jumlahKKR", title: "Jumlah KKR Oleh Ketua/Diakon" },
     { key: "targetBaptisan", title: "Target Baptisan Jemaat Tahun ini" },
-    { key: "perlawatanJemaat", title: "Jumlah Perlawatan Kepada Anggota Jemaat (Jiwa)", image: "fotoPerlawatanJemaat" },
-    { key: "perlawatannonSDA", title: "Jumlah Perlawatan Kepada Non SDA", image: "fotoPerlawatannonSDA" },
-    { key: "perlawatanPendeta", title: "Jumlah Perlawatan Kepada Pendeta/Pemuka Anggota Lainnya", image: "fotoPerlawatanPendeta" },
     { key: "pelatihanUNI", title: "Jumlah Pelatihan Yang di Ikuti dari UNI/SSD/GC", image: "fotoPelatihanUNI" },
     { key: "pelatihanKonferens", title: "Jumlah Pelatihan Yang di Ikuti dari Konferens/Disctrict", image: "fotoPelatihanKonferens" },
     { key: "pelatihanPendeta", title: "Jumlah Pelatihan Yang di lakukan Pendeta/Ketua-ketua Jemaat", image: "fotoPelatihanPendeta" },
     { key: "kelompokPeduli", title: "Jumlah Kelompok Peduli di Jemaat", image: "fotoKelompokPeduli" },
     { key: "tamuKelompokPeduli", title: "Jumlah Tamu Dalam Kelompok Peduli", image: "fotoTamuKelompok" },
     { key: "pembelajaranAlkitab", title: "Jumlah Orang di Berikan Pembelajaran Alkitab Non SDA (Belum di Baptis)", image: "fotoPembelajaran" },
-    { key: "baptisanBulanIni", title: "Baptisan Bulan Ini", image: "fotoBaptisanBulanIni" },
     { key: "seminarKhotbah", title: "Jumlah Mengikuti/Mangadakan Seminar Khotbah", image: "fotoSeminarKhotbah" },
     { key: "retreatPendeta", title: "Jumlah Retreat Yang Melibatkan Pendeta Jemaat" },
     { key: "penanamanGereja", title: "Jumlah Penanaman Gereja Baru/Ladang Baru", image: "fotoPenanamanGereja" },
@@ -56,7 +61,6 @@ const HistoryDetailPage = () => {
     { key: "berkhotbahSabat7", title: "Jumlah Berkhotbah Pada Hari Sabat Ke-7" },
     { key: "persentasiDiakones", title: "Jumlah Persentasi Kehadiran Anggota per Bulan" },
     { key: "jumlahPersembahan", title: "Jumlah Persembahan" },
-    { key: "komiteJemaat", title: "Jumlah Komite Jemaat (Paling kurang 1 kali dalam sebulan)", image: "fotoKomiteJemaat" },
   ];
 
   return (
@@ -75,9 +79,51 @@ const HistoryDetailPage = () => {
             </h2>
           </div>
 
-          {/* Data Grid */}
+          {/* Priority Fields (Top 5 required fields) */}
+          <h2 className="text-xl font-bold text-green-700 mb-4">Fields Wajib</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            {priorityFields.map((field) => {
+              // Skip if the field doesn't exist in the data
+              if (historyDetail[field.key] === undefined) return null;
+
+              // Get the image URL if it exists
+              const imageUrl = field.image ? historyDetail[field.image] : null;
+
+              return (
+                <div key={field.key} className="flex flex-col">
+                  {/* Header Card */}
+                  <div className="bg-green-100 p-4 rounded-t-lg">
+                    <h3 className="text-green-800 font-medium text-center">
+                      {field.title}
+                    </h3>
+                  </div>
+                  
+                  {/* Value Card */}
+                  <div className="bg-green-500 p-4 rounded-b-lg flex items-center justify-center">
+                    <span className="text-white text-xl font-bold">
+                      {historyDetail[field.key] ?? "..."}
+                    </span>
+                  </div>
+
+                  {/* Image if available */}
+                  {imageUrl && (
+                    <div className="mt-2">
+                      <img
+                        src={imageUrl}
+                        alt={`Image for ${field.title}`}
+                        className="w-full h-auto object-cover rounded-lg shadow-md"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Remaining Fields */}
+          <h2 className="text-xl font-bold text-green-700 mb-4">Detail Lainnya</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dataFields.map((field) => {
+            {remainingFields.map((field) => {
               // Skip if the field doesn't exist in the data
               if (historyDetail[field.key] === undefined) return null;
 
