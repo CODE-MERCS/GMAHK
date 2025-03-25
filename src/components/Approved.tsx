@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { getHistory, getHistoryByMonth } from "../api/form";
+import { getApprovedFormData } from "../api/form";
 import { Loader2 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+
+interface ApprovedData {
+  id: number;
+  tahun: number;
+  bulan: string;
+  username: string;
+  valid: boolean;
+}
 
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -11,20 +19,12 @@ const months = [
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 2030 - 2023 + 1 }, (_, i) => 2023 + i);
 
-interface HistoryData {
-  id: number;
-  tahun: number;
-  bulan: string;
-  username: string;
-  valid: boolean;
-}
-
-const History = () => {
-  const [historyData, setHistoryData] = useState<HistoryData[]>([]);
+const ApprovedReportsPage = () => {
+  const [approvedData, setApprovedData] = useState<ApprovedData[]>([]);
+  const [filteredData, setFilteredData] = useState<ApprovedData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
-  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-  const [dataFetched, setDataFetched] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,52 +39,54 @@ const History = () => {
     return "/";
   };
 
-  // Fungsi untuk menentukan warna status
-  const getStatusColor = (valid: boolean): string => {
-    return valid ? "bg-green-500" : "bg-red-500";
-  };
-
-  // Format nama bulan
   const formatBulan = (bulan: string): string => {
     if (!bulan) return "N/A";
     return bulan.charAt(0).toUpperCase() + bulan.slice(1).toLowerCase();
   };
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchApprovedData = async () => {
       setLoading(true);
       try {
-        let response;
-        if (selectedMonth) {
-          response = await getHistoryByMonth(selectedMonth, selectedYear);
-        } else {
-          response = await getHistory();
-        }
-
+        const response = await getApprovedFormData();
+        
         if (response?.data?.length) {
-          setHistoryData(response.data);
+          setApprovedData(response.data);
+          setFilteredData(response.data);
         } else {
-          setHistoryData([]);
+          setApprovedData([]);
+          setFilteredData([]);
         }
-
-        setDataFetched(true);
       } catch (error) {
-        console.error("Error fetching history:", error);
-        setHistoryData([]);
+        console.error("Error fetching approved data:", error);
+        setApprovedData([]);
+        setFilteredData([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHistory();
-  }, [selectedMonth, selectedYear]);
+    fetchApprovedData();
+  }, []);
+
+  useEffect(() => {
+    const filtered = approvedData.filter(item => {
+      const monthMatch = selectedMonth 
+        ? item.bulan.toLowerCase() === selectedMonth.toLowerCase()
+        : true;
+      const yearMatch = item.tahun === selectedYear;
+      return monthMatch && yearMatch;
+    });
+    setFilteredData(filtered);
+  }, [selectedMonth, selectedYear, approvedData]);
 
   return (
     <div className="min-h-screen p-6">
       <h1 className="text-3xl font-bold text-green-700 text-center my-12">
-        History Laporan
+        Laporan yang Telah Diterima
       </h1>
 
+      {/* Filter Section */}
       <div className="flex justify-center gap-4 mb-6">
         <select
           value={selectedMonth}
@@ -114,9 +116,9 @@ const History = () => {
         </div>
       ) : (
         <>
-          {historyData.length > 0 ? (
+          {filteredData.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {historyData.map((item) => (
+              {filteredData.map((item) => (
                 <NavLink 
                   to={`${getHomePath()}/history/${item.id}`}
                   key={item.id}
@@ -127,7 +129,7 @@ const History = () => {
                       <h2 className="text-lg font-semibold text-gray-800">
                         {formatBulan(item.bulan)}
                       </h2>
-                      <div className={`h-3 w-3 rounded-full ${getStatusColor(item.valid)}`}></div>
+                      <div className="h-3 w-3 rounded-full bg-green-500"></div>
                     </div>
                   </div>
 
@@ -149,17 +151,21 @@ const History = () => {
                 </NavLink>
               ))}
             </div>
-          ) : dataFetched ? (
-            <p className="text-center text-gray-600 col-span-full">
-              {selectedMonth 
-                ? `Tidak ada laporan di bulan ${selectedMonth} tahun ${selectedYear}.`
-                : "Tidak ada history laporan."}
-            </p>
-          ) : null}
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg">
+                {selectedMonth || selectedYear !== currentYear
+                  ? `Tidak ada laporan yang diterima pada ${
+                      selectedMonth ? `${selectedMonth} ` : ""
+                    }${selectedYear}`
+                  : "Tidak ada laporan yang telah diterima"}
+              </p>
+            </div>
+          )}
         </>
       )}
     </div>
   );
 };
 
-export default History;
+export default ApprovedReportsPage;

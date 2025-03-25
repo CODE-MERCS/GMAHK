@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getHistoryById } from "../api/form";
-import { Loader2, Calendar, User } from "lucide-react";
+import { useParams , useNavigate } from "react-router-dom";
+import { getHistoryById, approveFormData } from "../api/form";
+import { Loader2 } from "lucide-react";
 
 const HistoryDetailPage = () => {
-  const { id } = useParams(); // Get ID from URL
-  const [historyDetail, setHistoryDetail] = useState<Record<string, any> | null>(null);
+  const { id } = useParams();
+  const navigate = useNavigate(); // Perbaiki inisialisasi useNavigate
+  const [historyDetail, setHistoryDetail] = useState<Record<
+    string,
+    any
+  > | null>(null);
   const [loading, setLoading] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [error, setError] = useState("");
+  const [role, setRole] = useState("");
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -14,7 +21,7 @@ const HistoryDetailPage = () => {
       setLoading(true);
       try {
         const response = await getHistoryById(id);
-        setHistoryDetail(response.data); // Make sure to get 'data'
+        setHistoryDetail(response.data);
       } catch (error) {
         console.error("❌ Error fetching history detail:", error);
       } finally {
@@ -22,8 +29,47 @@ const HistoryDetailPage = () => {
       }
     };
 
+    const userRole = localStorage.getItem("role");
+    setRole(userRole || "");
+
     fetchDetail();
   }, [id]);
+
+  // Fungsi untuk handle approval
+  const handleApprove = async () => {
+    if (!id) return;
+    setApproving(true);
+    setError("");
+
+    try {
+      await approveFormData(Number(id));
+      navigate("/sekretaris/history");
+    } catch (err) {
+      console.error("Gagal mengapprove:", err);
+      setError("Gagal mengapprove laporan. Silakan coba lagi.");
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  // // Tambahkan ini di JSX sebelum metadata
+  // {role === "SEKRETARIS" && !historyDetail?.valid && (
+  //   <div className="mt-8 text-center">
+  //     <button
+  //       onClick={handleApprove}
+  //       disabled={approving}
+  //       className={`px-6 py-3 rounded-lg font-semibold text-white ${
+  //         approving ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+  //       } transition-colors`}
+  //     >
+  //       {approving ? "Memproses..." : "Terima Laporan"}
+  //     </button>
+
+  //     {error && (
+  //       <p className="mt-2 text-red-600">{error}</p>
+  //     )}
+  //   </div>
+  // )}
 
   const formatCapitalizedMonth = (month: string) => {
     if (!month) return "N/A";
@@ -32,34 +78,105 @@ const HistoryDetailPage = () => {
 
   // Priority fields to display first (the 5 required fields with their images)
   const priorityFields = [
-    { key: "perlawatanJemaat", title: "Jumlah Perlawatan Kepada Anggota Jemaat (Jiwa)", image: "fotoPerlawatanJemaat" },
-    { key: "perlawatannonSDA", title: "Jumlah Perlawatan Kepada Non SDA", image: "fotoPerlawatannonSDA" },
-    { key: "perlawatanPendeta", title: "Jumlah Perlawatan Kepada Pendeta/Pemuka Anggota Lainnya", image: "fotoPerlawatanPendeta" },
-    { key: "baptisanBulanIni", title: "Baptisan Bulan Ini", image: "fotoBaptisanBulanIni" },
-    { key: "komiteJemaat", title: "Jumlah Komite Jemaat (Paling kurang 1 kali dalam sebulan)", image: "fotoKomiteJemaat" },
+    {
+      key: "perlawatanJemaat",
+      title: "Jumlah Perlawatan Kepada Anggota Jemaat (Jiwa)",
+      image: "fotoPerlawatanJemaat",
+    },
+    {
+      key: "perlawatannonSDA",
+      title: "Jumlah Perlawatan Kepada Non SDA",
+      image: "fotoPerlawatannonSDA",
+    },
+    {
+      key: "perlawatanPendeta",
+      title: "Jumlah Perlawatan Kepada Pendeta/Pemuka Anggota Lainnya",
+      image: "fotoPerlawatanPendeta",
+    },
+    {
+      key: "baptisanBulanIni",
+      title: "Baptisan Bulan Ini",
+      image: "fotoBaptisanBulanIni",
+    },
+    {
+      key: "komiteJemaat",
+      title: "Jumlah Komite Jemaat (Paling kurang 1 kali dalam sebulan)",
+      image: "fotoKomiteJemaat",
+    },
   ];
 
   // Remaining fields to display after priority fields
   const remainingFields = [
-    { key: "hadirSabat2", title: "Anggota yang hadir Sabat ke-2 dalam Triwulan Berjalan" },
-    { key: "hadirSabat7", title: "Anggota yang hadir Sabat ke-7 dalam Triwulan Berjalan" },
-    { key: "persentaseKehadiranBulan", title: "Persentase Kehadiran Per Bulan" },
+    {
+      key: "hadirSabat2",
+      title: "Anggota yang hadir Sabat ke-2 dalam Triwulan Berjalan",
+    },
+    {
+      key: "hadirSabat7",
+      title: "Anggota yang hadir Sabat ke-7 dalam Triwulan Berjalan",
+    },
+    {
+      key: "persentaseKehadiranBulan",
+      title: "Persentase Kehadiran Per Bulan",
+    },
     { key: "jumlahKKR", title: "Jumlah KKR Oleh Ketua/Diakon" },
     { key: "targetBaptisan", title: "Target Baptisan Jemaat Tahun ini" },
-    { key: "pelatihanUNI", title: "Jumlah Pelatihan Yang di Ikuti dari UNI/SSD/GC", image: "fotoPelatihanUNI" },
-    { key: "pelatihanKonferens", title: "Jumlah Pelatihan Yang di Ikuti dari Konferens/Disctrict", image: "fotoPelatihanKonferens" },
-    { key: "pelatihanPendeta", title: "Jumlah Pelatihan Yang di lakukan Pendeta/Ketua-ketua Jemaat", image: "fotoPelatihanPendeta" },
-    { key: "kelompokPeduli", title: "Jumlah Kelompok Peduli di Jemaat", image: "fotoKelompokPeduli" },
-    { key: "tamuKelompokPeduli", title: "Jumlah Tamu Dalam Kelompok Peduli", image: "fotoTamuKelompok" },
-    { key: "pembelajaranAlkitab", title: "Jumlah Orang di Berikan Pembelajaran Alkitab Non SDA (Belum di Baptis)", image: "fotoPembelajaran" },
-    { key: "seminarKhotbah", title: "Jumlah Mengikuti/Mangadakan Seminar Khotbah", image: "fotoSeminarKhotbah" },
-    { key: "retreatPendeta", title: "Jumlah Retreat Yang Melibatkan Pendeta Jemaat" },
-    { key: "penanamanGereja", title: "Jumlah Penanaman Gereja Baru/Ladang Baru", image: "fotoPenanamanGereja" },
+    {
+      key: "pelatihanUNI",
+      title: "Jumlah Pelatihan Yang di Ikuti dari UNI/SSD/GC",
+      image: "fotoPelatihanUNI",
+    },
+    {
+      key: "pelatihanKonferens",
+      title: "Jumlah Pelatihan Yang di Ikuti dari Konferens/Disctrict",
+      image: "fotoPelatihanKonferens",
+    },
+    {
+      key: "pelatihanPendeta",
+      title: "Jumlah Pelatihan Yang di lakukan Pendeta/Ketua-ketua Jemaat",
+      image: "fotoPelatihanPendeta",
+    },
+    {
+      key: "kelompokPeduli",
+      title: "Jumlah Kelompok Peduli di Jemaat",
+      image: "fotoKelompokPeduli",
+    },
+    {
+      key: "tamuKelompokPeduli",
+      title: "Jumlah Tamu Dalam Kelompok Peduli",
+      image: "fotoTamuKelompok",
+    },
+    {
+      key: "pembelajaranAlkitab",
+      title:
+        "Jumlah Orang di Berikan Pembelajaran Alkitab Non SDA (Belum di Baptis)",
+      image: "fotoPembelajaran",
+    },
+    {
+      key: "seminarKhotbah",
+      title: "Jumlah Mengikuti/Mangadakan Seminar Khotbah",
+      image: "fotoSeminarKhotbah",
+    },
+    {
+      key: "retreatPendeta",
+      title: "Jumlah Retreat Yang Melibatkan Pendeta Jemaat",
+    },
+    {
+      key: "penanamanGereja",
+      title: "Jumlah Penanaman Gereja Baru/Ladang Baru",
+      image: "fotoPenanamanGereja",
+    },
     { key: "ketuaJemaat", title: "Jumlah Ketua Jemaat" },
     { key: "jumlahDiakon", title: "Jumlah Diakon" },
     { key: "berkhotbahSabat", title: "Jumlah Berkhotbah Pada Hari Sabat" },
-    { key: "berkhotbahSabat7", title: "Jumlah Berkhotbah Pada Hari Sabat Ke-7" },
-    { key: "persentasiDiakones", title: "Jumlah Persentasi Kehadiran Anggota per Bulan" },
+    {
+      key: "berkhotbahSabat7",
+      title: "Jumlah Berkhotbah Pada Hari Sabat Ke-7",
+    },
+    {
+      key: "persentasiDiakones",
+      title: "Jumlah Persentasi Kehadiran Anggota per Bulan",
+    },
     { key: "jumlahPersembahan", title: "Jumlah Persembahan" },
   ];
 
@@ -73,14 +190,34 @@ const HistoryDetailPage = () => {
         <>
           {/* Header with username and date */}
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold text-yellow-500">{historyDetail.username ?? "Unknown"}</h1>
+            <h1 className="text-3xl font-bold text-yellow-500">
+              {historyDetail.username ?? "Unknown"}
+            </h1>
             <h2 className="text-2xl font-bold text-green-600 mt-2">
-              {formatCapitalizedMonth(historyDetail.bulan)} {historyDetail.tahun}
+              {formatCapitalizedMonth(historyDetail.bulan)}{" "}
+              {historyDetail.tahun}
             </h2>
           </div>
 
+          {role === "SEKRETARIS" && !historyDetail?.valid && (
+            <div className="text-right">
+              <button
+                onClick={handleApprove}
+                disabled={approving}
+                className={`px-6 py-3 rounded-lg font-semibold text-white ${
+                  approving ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+                } transition-colors`}
+              >
+                {approving ? "Memproses..." : "Terima Laporan"}
+              </button>
+              {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
+            </div>
+          )}
+
           {/* Priority Fields (Top 5 required fields) */}
-          <h2 className="text-xl font-bold text-green-700 mb-4">Fields Wajib</h2>
+          <h2 className="text-xl font-bold text-green-700 mb-4">
+            Fields Wajib
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
             {priorityFields.map((field) => {
               // Skip if the field doesn't exist in the data
@@ -97,7 +234,7 @@ const HistoryDetailPage = () => {
                       {field.title}
                     </h3>
                   </div>
-                  
+
                   {/* Value Card */}
                   <div className="bg-green-500 p-4 rounded-b-lg flex items-center justify-center">
                     <span className="text-white text-xl font-bold">
@@ -121,7 +258,9 @@ const HistoryDetailPage = () => {
           </div>
 
           {/* Remaining Fields */}
-          <h2 className="text-xl font-bold text-green-700 mb-4">Detail Lainnya</h2>
+          <h2 className="text-xl font-bold text-green-700 mb-4">
+            Detail Lainnya
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {remainingFields.map((field) => {
               // Skip if the field doesn't exist in the data
@@ -138,7 +277,7 @@ const HistoryDetailPage = () => {
                       {field.title}
                     </h3>
                   </div>
-                  
+
                   {/* Value Card */}
                   <div className="bg-green-500 p-4 rounded-b-lg flex items-center justify-center">
                     <span className="text-white text-xl font-bold">
@@ -160,6 +299,7 @@ const HistoryDetailPage = () => {
               );
             })}
           </div>
+
 
           {/* Metadata at the bottom */}
           <div className="mt-8 text-gray-500 text-center">

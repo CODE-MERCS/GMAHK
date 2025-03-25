@@ -16,7 +16,7 @@ const NavbarKetuaDepartemen: React.FC = () => {
       <div className="max-w-6xl mx-auto flex justify-between items-center">
         <div className="flex space-x-8">
           <Link 
-            to="/ketuadepartemen/history" 
+            to="/ketuadepartemen/approved" 
             className="flex items-center text-green-800 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
           >
             <FileText className="mr-2" size={20} />

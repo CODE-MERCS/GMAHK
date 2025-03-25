@@ -12,41 +12,47 @@ const NavbarSekretaris: React.FC = () => {
   };
 
   return (
-    <nav className="bg-green-100 p-2 border-b border-green-300 shadow-sm">
-      <div className="max-w-6xl mx-auto flex justify-between items-center">
-        <div className="flex space-x-8">
-          <Link 
-            to="/sekretaris" 
-            className="flex items-center text-green-800 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-          >
-            <Home className="mr-2" size={20} />
-            <span>Home</span>
-          </Link>
-          
-          <Link 
-            to="/sekretaris/laporan" 
-            className="flex items-center text-green-800 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-          >
-            <FileText className="mr-2" size={20} />
-            <span>Laporan Bulan Ini</span>
-          </Link>
-          
-          <Link 
-            to="/sekretaris/history" 
-            className="flex items-center text-green-800 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-          >
-            <History className="mr-2" size={20} />
-            <span>Riwayat</span>
-          </Link>
+    <nav className="bg-green-100 border-b border-green-300 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Left Section - Navigation Links */}
+          <div className="flex-1 flex items-center space-x-6">
+            <Link
+              to="/sekretaris"
+              className="flex items-center text-green-800 px-3 py-2 rounded-md hover:bg-green-200 transition-colors"
+            >
+              <Home className="h-5 w-5 mr-2" />
+              <span className="text-sm font-medium">Home</span>
+            </Link>
+
+            <Link
+              to="/sekretaris/approved"
+              className="flex items-center text-green-800 px-3 py-2 rounded-md hover:bg-green-200 transition-colors"
+            >
+              <FileText className="h-5 w-5 mr-2" />
+              <span className="text-sm font-medium">Approved Laporan</span>
+            </Link>
+
+            <Link
+              to="/sekretaris/history"
+              className="flex items-center text-green-800 px-3 py-2 rounded-md hover:bg-green-200 transition-colors"
+            >
+              <History className="h-5 w-5 mr-2" />
+              <span className="text-sm font-medium">Riwayat Laporan</span>
+            </Link>
+          </div>
+
+          {/* Right Section - Logout */}
+          <div className="flex items-center">
+            <button
+              onClick={handleLogout}
+              className="flex items-center text-red-600 hover:text-red-700 px-3 py-2 rounded-md hover:bg-red-50 transition-colors"
+            >
+              <LogOut className="h-5 w-5 mr-2" />
+              <span className="text-sm font-medium">Keluar</span>
+            </button>
+          </div>
         </div>
-        
-        <button 
-          onClick={handleLogout}
-          className="flex items-center text-red-600 px-4 py-2 rounded-md hover:bg-red-50 transition-colors"
-        >
-          <LogOut className="mr-2" size={20} />
-          <span>Keluar</span>
-        </button>
       </div>
     </nav>
   );

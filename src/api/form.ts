@@ -278,4 +278,49 @@ export const validateDraftField = async (categoryId: number, draftId: number, fo
   }
 };
 
+// ✅ GET data yang sudah di-approve
+export const getApprovedFormData = async () => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.get(`${API_BASE_URL}/data/approved`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("✅ Data approved berhasil diambil:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Gagal mengambil data approved:", error);
+    throw error;
+  }
+};
+
+// ✅ PUT approve data
+export const approveFormData = async (id: number) => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Unauthorized: Token tidak ditemukan");
+
+    const response = await axios.put(
+      `${API_BASE_URL}/data/${id}/approve`,
+      {}, // Body kosong
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log(`✅ Data ID ${id} berhasil diapprove:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`❌ Gagal mengapprove data ID ${id}:`, error);
+    throw error;
+  }
+};
+
 

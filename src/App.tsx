@@ -5,6 +5,7 @@ import DashboardPendetaPage from "./pages/PendetaPage";
 import Register from "./pages/RegisterPage";
 import HistoryPage from "./pages/HistoryPage";
 import Laporan from "./components/Laporan";
+import ApprovedReportsPage from "./components/Approved";
 import Draft from "./components/draft";
 import DraftDetailPage from "./components/DraftDetailPage";
 import HistoryDetailPage from "./pages/HistoryDetailPage";
@@ -22,11 +23,14 @@ const App: React.FC = () => {
           <Route path="history" element={<HistoryPage />} />
           <Route path="/ketuadepartemen/history/:id" element={<HistoryDetailPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="approved" element={<ApprovedReportsPage />} />
+
         </Route>
         <Route path="sekretaris" element={<SekertarisPage />}>
           <Route path="history" element={<HistoryPage />} />
           <Route path="/sekretaris/history/:id" element={<HistoryDetailPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="approved" element={<ApprovedReportsPage />} />
         </Route>
         <Route path="/dashboard" element={<DashboardPendetaPage />}>
           <Route path="laporan" element={<Laporan />} />
