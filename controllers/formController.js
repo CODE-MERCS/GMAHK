@@ -607,6 +607,81 @@ const getDraftById = async (req, res) => {
   }
 };
 
+// ✅ ENDPOINT APPROVAL DATA OLEH SEKRETARIS
+const approveFormData = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Cek role user
+    if (req.user.role !== 'SEKRETARIS') {
+      return res.status(403).json({ 
+        message: "Hanya Sekretaris yang dapat melakukan approval" 
+      });
+    }
+
+    // Update status validasi
+    const updatedData = await prisma.formData.update({
+      where: { id: parseInt(id, 10) },
+      data: { valid: true },
+      include: { 
+        user: { 
+          select: { 
+            name: true 
+          } 
+        } 
+      } // <- Penutupan kurung yang benar
+    });
+
+    // Format response
+    const { user, ...rest } = updatedData;
+    const formattedData = { ...rest, username: user.name };
+
+    res.status(200).json({
+      message: "Data berhasil divalidasi dan disetujui",
+      data: formattedData
+    });
+  } catch (error) {
+    console.error("Error in approveFormData:", error.message);
+    res.status(500).json({ 
+      message: "Gagal melakukan approval data",
+      error: error.message 
+    });
+  }
+};
+
+// ✅ GET DATA YANG SUDAH DIVALIDASI
+const getApprovedFormData = async (req, res) => {
+  try {
+    const approvedData = await prisma.formData.findMany({
+      where: { valid: true },
+      include: { 
+        user: { 
+          select: { 
+            name: true 
+          } 
+        } 
+      } // Perbaikan penutupan kurung yang benar
+    });
+
+    // Format ulang data
+    const formattedData = approvedData.map(data => ({
+      ...data,
+      username: data.user.name
+    }));
+
+    res.status(200).json({ 
+      message: "Data approved berhasil diambil",
+      data: formattedData 
+    });
+  } catch (error) {
+    console.error("Error in getApprovedFormData:", error.message);
+    res.status(500).json({ 
+      message: "Gagal mengambil data approved",
+      error: error.message 
+    });
+  }
+};
+
 
 
 
@@ -617,4 +692,4 @@ module.exports = { validateFormData,
   sendDraftToForm,
   getAllDrafts,
   getDraftByBulan,
-  getDraftById,validateDraftField};
+  getDraftById,validateDraftField, getApprovedFormData, approveFormData};

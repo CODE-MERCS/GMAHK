@@ -87,6 +87,8 @@ model FormData {
   fotoPenanamanGereja    String?
   fotoKomiteJemaat       String
 
+  valid      Boolean @default(false)
+
   createdAt DateTime @default(now())
 }
 

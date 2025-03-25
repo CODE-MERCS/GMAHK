@@ -5,7 +5,7 @@ const { validateFormData,
   sendDraftToForm,
   getAllDrafts,
   getDraftByBulan,
-  getDraftById, validateDraftField } = require("../controllers/formController");
+  getDraftById, validateDraftField, approveFormData, getApprovedFormData } = require("../controllers/formController");
 const { authMiddleware, roleMiddleware } = require("../middlewares/authMiddleware");
 const multer = require("multer");
 
@@ -29,9 +29,11 @@ router.post(
   validateDraftField
 );
 
+// Pindahkan rute /data/approved SEBELUM rute /data/:id
 router.get("/data", authMiddleware, getAllFormData);
+router.get("/data/approved", authMiddleware, getApprovedFormData); // <-- Ini harus di atas
 router.get("/data/:bulan/:tahun", authMiddleware, getFormDataByBulan);
-router.get("/data/:id", authMiddleware, getFormDataById);
+router.get("/data/:id", authMiddleware, getFormDataById); // <-- Ini di bawah
 
 
 // Endpoint untuk menyimpan ke database jika semua validasi sukses
@@ -55,5 +57,15 @@ router.post(
 router.get("/draft", authMiddleware, getAllDrafts);
 router.get("/draft/bulan/:bulan", authMiddleware, getDraftByBulan);
 router.get("/draft/:id", authMiddleware, getDraftById);
+
+// Approval oleh Sekretaris
+router.put(
+  "/data/:id/approve",
+  authMiddleware,
+  roleMiddleware("SEKRETARIS"),
+  approveFormData
+);
+
+
 
 module.exports = router;
