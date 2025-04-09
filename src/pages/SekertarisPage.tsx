@@ -14,15 +14,14 @@ const Sekretaris = () => {
       {/* Sidebar */}
       <SidebarSekretaris />
 
-      {/* Main Content */}
-      <div className="ml-64 w-full">
+      {/* Main Content - Added flex and flex-col to create proper layout structure */}
+      <div className="ml-64 w-full flex flex-col min-h-screen">
         <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
           <AppBar />
         </div>
         
-        {/* Reduced padding from p-6 to p-4 */}
-        <div className="p-4">
-          {/* Reduced margin-top from mt-6 to mt-2 and padding from p-6 to p-4 */}
+        {/* Main content area - Added flex-grow to push footer down */}
+        <div className="p-4 flex-grow">
           <div className="mt-2 bg-white p-4 rounded-lg shadow-md">
             {/* Show Hero only on the main dashboard page */}
             {isDashboard && (
@@ -31,13 +30,13 @@ const Sekretaris = () => {
               </div>
             )}
 
-            {/* Reduced margin-top from mt-6 to mt-3 */}
             <div className="mt-3">
               <Outlet />
             </div>
           </div>
         </div>
         
+        {/* Footer will now stay at bottom */}
         <Footer />
       </div>
     </div>
