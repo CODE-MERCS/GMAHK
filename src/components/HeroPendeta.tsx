@@ -1,11 +1,11 @@
 import React from "react";
 import { AlertCircle, BookOpen } from "lucide-react";
 
-const HeroPendeta: React.FC = () => {
+const HeroPendeta = () => {
   return (
-    <div className="container mx-auto py-10 px-4">
+    <div className="w-full">
       {/* Alert Box */}
-      <div className="bg-green-100 p-4 rounded-lg mb-8">
+      <div className="bg-green-100 p-4 rounded-lg mb-6">
         <div className="flex items-start">
           <div className="flex-shrink-0">
             <AlertCircle className="h-6 w-6 text-yellow-500" />
@@ -39,6 +39,13 @@ const HeroPendeta: React.FC = () => {
 
         {/* Visi */}
         <div className="bg-green-100 p-6 rounded-lg">
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/binoculars.png"
+              alt="Icon Visi"
+              className="h-12 w-12 object-contain" 
+            />
+          </div>
           <h2 className="text-xl font-bold text-center text-yellow-600 mb-4">
             Visi
           </h2>
@@ -49,6 +56,13 @@ const HeroPendeta: React.FC = () => {
 
         {/* Misi */}
         <div className="bg-green-100 p-6 rounded-lg">
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/target.png"
+              alt="Icon Misi"
+              className="h-12 w-12 object-contain" 
+            />
+          </div>
           <h2 className="text-xl font-bold text-center text-yellow-600 mb-4">
             Misi
           </h2>

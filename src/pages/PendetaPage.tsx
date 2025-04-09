@@ -15,25 +15,20 @@ const DashboardPendetaPage = () => {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="ml-64 w-full">
-        {/* Add AppBar at the top */}
-        <AppBar />
+      <div className="ml-64 w-full flex flex-col min-h-screen">
+        <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+          <AppBar />
+        </div>
         
-        <div className="p-6">
-          <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
-            <h1 className="text-3xl font-bold text-green-700 mb-4">
-              Dashboard Pendeta
-            </h1>
-
-            {/* **Tampilkan hanya di halaman Dashboard** */}
+        <div className="p-6 flex-grow">
+          <div className="bg-white rounded-lg shadow-md">
+            {/* Tampilkan hanya di halaman Dashboard */}
             {isDashboard && (
-              <div className="flex items-center justify-center h-screen">
-                <HeroPendeta/>
-              </div>
+              <HeroPendeta />
             )}
 
-            {/* **Outlet untuk halaman lain seperti Laporan dan History** */}
-            <div className="mt-6">
+            {/* Outlet untuk halaman lain seperti Laporan dan History */}
+            <div className={!isDashboard ? "p-6" : ""}>
               <Outlet />
             </div>
           </div>
