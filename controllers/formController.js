@@ -619,26 +619,53 @@ const approveFormData = async (req, res) => {
       });
     }
 
-    // Update status validasi
-    const updatedData = await prisma.formData.update({
+    // Cari data form yang akan diapprove
+    const formData = await prisma.formData.findUnique({
       where: { id: parseInt(id, 10) },
-      data: { valid: true },
       include: { 
         user: { 
           select: { 
-            name: true 
+            name: true,
+            phone: true, // Tambahkan phone untuk notifikasi
+            id: true
           } 
         } 
-      } // <- Penutupan kurung yang benar
+      }
+    });
+    
+    if (!formData) {
+      return res.status(404).json({ message: "Data tidak ditemukan" });
+    }
+
+    // Update status validasi
+    const updatedData = await prisma.formData.update({
+      where: { id: parseInt(id, 10) },
+      data: { valid: true }
     });
 
-    // Format response
-    const { user, ...rest } = updatedData;
-    const formattedData = { ...rest, username: user.name };
+    // Format response (tanpa mengubah data asli formData)
+    const formattedData = { 
+      ...updatedData, 
+      username: formData.user.name 
+    };
+
+    // Kirim notifikasi WhatsApp ke pengguna yang mengunggah draft
+    try {
+      if (formData.user.phone) {
+        const message = `Laporan pada bulan ${formData.bulan} telah diterima`;
+        await sendWhatsAppNotification(formData.user.phone, message);
+        console.log(`Notifikasi terkirim ke ${formData.user.name} (${formData.user.phone})`);
+      }
+    } catch (notificationError) {
+      // Notifikasi gagal, tapi tidak menghentikan proses
+      console.error("Gagal mengirim notifikasi:", notificationError.message);
+      // Lanjutkan meski notifikasi gagal
+    }
 
     res.status(200).json({
       message: "Data berhasil divalidasi dan disetujui",
-      data: formattedData
+      data: formattedData,
+      notificationSent: formData.user.phone ? true : false
     });
   } catch (error) {
     console.error("Error in approveFormData:", error.message);
