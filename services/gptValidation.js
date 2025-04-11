@@ -7,7 +7,6 @@ const openai = new OpenAI({
 
 const validateImageWithGPT = async (imageUrl, expectedCount) => {
   try {
-    // Kirim permintaan ke API OpenAI
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [

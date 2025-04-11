@@ -240,7 +240,7 @@ if (!tahun || isNaN(tahun)) {
       ...inputData,
       userId,
       bulan: bulan.trim(),
-      tahun: tahun.trim(),
+      tahun: parseInt(tahun, 10),
       hadirSabat2: req.body.hadirSabat2,
       hadirSabat7: req.body.hadirSabat7,
       persentaseKehadiranBulan: req.body.persentaseKehadiranBulan,
