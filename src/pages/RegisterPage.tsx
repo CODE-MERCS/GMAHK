@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../api/auth";
 import { Mail, User, Lock, Phone, Loader2 } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast"; // 
+import toast, { Toaster } from "react-hot-toast"; //
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -23,10 +23,37 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Add state for validation errors
+  const [errors, setErrors] = useState({
+    phone: "",
+  });
+
+  // Create a validation function
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { phone: "" };
+
+    // Check phone number length
+    if (formData.phone.replace(/\D/g, "").length < 10) {
+      newErrors.phone = "Nomor telepon harus minimal 10 digit";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // Update handleSubmit to use validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate form before submitting
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
-  
+
     const { success, message } = await registerUser(
       formData.email,
       formData.name,
@@ -34,9 +61,9 @@ const Register = () => {
       formData.password,
       formData.role
     );
-  
+
     setLoading(false);
-  
+
     if (success) {
       // ✅ Pastikan toast sukses muncul hanya saat registrasi berhasil
       toast.success(message, {
@@ -48,7 +75,7 @@ const Register = () => {
           fontWeight: "bold",
         },
       });
-  
+
       // 🚀 Redirect setelah 2 detik
       setTimeout(() => navigate("/"), 2000);
     } else {
@@ -64,7 +91,6 @@ const Register = () => {
       });
     }
   };
-  
 
   return (
     <div
@@ -133,9 +159,16 @@ const Register = () => {
                 placeholder="Nomor Telepon"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                className={`w-full pl-10 p-3 border ${
+                  errors.phone ? "border-red-500" : "border-gray-300"
+                } rounded-lg focus:outline-none focus:ring-2 ${
+                  errors.phone ? "focus:ring-red-500" : "focus:ring-green-500"
+                } transition-all`}
                 required
               />
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+              )}
             </div>
 
             {/* Password Field */}

@@ -82,7 +82,7 @@ const History = () => {
   return (
     <div className="min-h-screen p-6">
       <h1 className="text-3xl font-bold text-green-700 text-center my-12">
-        History Laporan
+         Laporan Masuk
       </h1>
 
       <div className="flex justify-center gap-4 mb-6">

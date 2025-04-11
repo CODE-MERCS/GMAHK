@@ -31,6 +31,20 @@ const SidebarSekretaris = () => {
         </NavLink>
         
         <NavLink
+          to="/sekretaris/history"
+          end
+          className={({ isActive }) =>
+            `flex items-center p-3 rounded-lg transition ${
+              isActive
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-200"
+            }`
+          }
+        >
+          <History className="mr-3" size={20} />
+          Laporan Masuk
+        </NavLink>
+        <NavLink
           to="/sekretaris/approved"
           end
           className={({ isActive }) =>
@@ -45,20 +59,7 @@ const SidebarSekretaris = () => {
           Laporan Diterima
         </NavLink>
 
-        <NavLink
-          to="/sekretaris/history"
-          end
-          className={({ isActive }) =>
-            `flex items-center p-3 rounded-lg transition ${
-              isActive
-                ? "bg-green-600 text-white"
-                : "text-gray-700 hover:bg-gray-200"
-            }`
-          }
-        >
-          <History className="mr-3" size={20} />
-          Riwayat Laporan
-        </NavLink>
+        
         
         <NavLink
           to="/sekretaris/profile"

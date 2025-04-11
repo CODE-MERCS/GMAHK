@@ -12,39 +12,26 @@ const Hero = () => {
           </div>
           <div className="ml-3">
             <p className="text-yellow-700 font-medium">
-              Pastikan semua laporan sudah diterima untuk bukti pendeta sudah
-              mengirim laporan dan bisa nemerima gaji
+              Untuk informasi seputar laporan silahkan melakukan kontak dengan sekretaris
             </p>
           </div>
         </div>
       </div>
 
-      {/* Content Grid */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {/* Laporan Bulan Ini */}
-        <div className="bg-green-100 p-6 rounded-lg">
+      {/* Centered Content Cards */}
+      <div className="flex flex-col md:flex-row justify-center items-stretch gap-6">
+        {/* Lihat Laporan */}
+        <div className="bg-green-100 p-6 rounded-lg w-full md:w-1/3">
           <h2 className="text-xl font-bold text-center text-yellow-600 mb-4">
-            Laporan Bulan Ini
+            Lihat Laporan 
           </h2>
           <p className="text-green-800">
-            Cek dan Terima laporan dari pendeta yang sudah mengirim laporan
-            mereka di bulan ini.
-          </p>
-        </div>
-
-        {/* Riwayat */}
-        <div className="bg-green-100 p-6 rounded-lg">
-          <h2 className="text-xl font-bold text-center text-yellow-600 mb-4">
-            Riwayat
-          </h2>
-          <p className="text-green-800">
-            Anda dapat melihat laporan pendeta - pendeta yang sudah anda terima
-            di sini.
+            Anda dapat melihat laporan yang sudah dikumpulkan pendeta berdasarkan tahun dan bulan pengumpulan
           </p>
         </div>
 
         {/* Ayat Bulan Ini */}
-        <div className="bg-green-100 p-6 rounded-lg">
+        <div className="bg-green-100 p-6 rounded-lg w-full md:w-1/3">
           <div className="flex justify-center mb-2">
             <BookOpen className="h-8 w-8 text-yellow-600" />
           </div>
