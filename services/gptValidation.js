@@ -13,8 +13,10 @@ const validateImageWithGPT = async (imageUrl, expectedCount) => {
         {
           role: "user",
           content: [
-            { type: "text", text: "Hitung berapa banyak orang dalam gambar ini dan hanya balas dengan angka saja." },
             {
+              type: "text",
+              text: "Tolong hitung berapa banyak manusia (orang) yang ada dalam gambar ini. Abaikan hewan seperti kelinci, anjing, kucing, burung, dsb. Jika ada manusia di dalam gambar, berikan hanya jumlah manusianya (angka saja). Tetapi jika dalam gambar **tidak ada manusia sama sekali**, dan hanya ada hewan, maka jawab dengan angka **100**. Jangan sertakan teks tambahan, hanya balas dengan angka.",
+            },            {
               type: "image_url",
               image_url: {
                 url: imageUrl,
