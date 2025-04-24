@@ -1,5 +1,5 @@
 import axios from "axios";
-const API_BASE_URL = "https://gmahkgas.vercel.app/form";
+const API_BASE_URL = "https://gmahk-gsa.vercel.app/form";
 
 export const getAuthToken = () => {
   return localStorage.getItem("token");

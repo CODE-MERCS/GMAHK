@@ -2,8 +2,8 @@ import axios from "axios";
 import { setSession } from "../utils/session";
 import { getAuthToken } from "./form";
 
-const API_BASE_URL = "https://gmahkgas.vercel.app/auth";
-const PROFILE_BASE_URL = "https://gmahkgas.vercel.app/profile";
+const API_BASE_URL = "https://gmahk-gsa.vercel.app/auth";
+const PROFILE_BASE_URL = "https://gmahk-gsa.vercel.app/profile";
 /**
  * Fungsi untuk login user
  */

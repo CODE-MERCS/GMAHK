@@ -269,6 +269,16 @@ const handleSaveDraft = async () => {
     e.preventDefault();
     setSaving(true);
 
+    // Check if all required fields are validated
+  const requiredFields = ['perlawatanJemaat', 'perlawatannonSDA', 'perlawatanPendeta','baptisanBulanIni','komiteJemaat'];
+  const missingValidations = requiredFields.filter(field => !validations[field]?.valid);
+  
+  if (missingValidations.length > 0) {
+    toast.error(`⚠️ Harap validasi field berikut: ${missingValidations.join(', ')}`);
+    setSaving(false);
+    return;
+  }
+
      // 🔹 Validasi tahun
      if (!formData["tahun"] || isNaN(Number(formData["tahun"]))) {
       toast.error("⚠️ Harap masukkan tahun yang valid!");
