@@ -31,6 +31,12 @@ model FormData {
   bulan     String
   userId    Int
   user      User   @relation(fields: [userId], references: [id]) // Relasi ke User
+
+  jemaat           String
+  wilayah          String
+  ketuaJemaatName  String
+
+
   // Jumlah Anggota Jemaat
   hadirSabat2              Int
   hadirSabat7              Int
@@ -98,6 +104,11 @@ model Draft  {
   bulan     String
   userId    Int
   user      User   @relation(fields: [userId], references: [id]) // Relasi ke User
+
+  jemaat           String
+  wilayah          String
+  ketuaJemaatName  String
+
   // Jumlah Anggota Jemaat
   hadirSabat2              Int
   hadirSabat7              Int
@@ -132,7 +143,7 @@ model Draft  {
   ketuaJemaat  Int
   jumlahDiakon Int
 
-  // Berkhotbah & Persembahan
+  // Berkhotbah & Persembaha
   berkhotbahSabat    Int
   berkhotbahSabat7   Int
   persentasiDiakones Float

@@ -1,74 +1,111 @@
-const { saveFormData,saveDraft,deleteDraft,moveDraftToForm } = require("../services/formService");
-const { sendWhatsAppNotification } = require('../services/notificationService');
+const {
+  saveFormData,
+  saveDraft,
+  deleteDraft,
+  moveDraftToForm,
+} = require("../services/formService");
+const { sendWhatsAppNotification } = require("../services/notificationService");
 const { validateImageWithGPT } = require("../services/gptValidation");
 const { uploadImageToImageKit } = require("../services/imageKitService");
 const categoryMappings = require("../configs/categoryMapping");
 const prisma = require("../configs/prisma");
 
-
 // Mapping kategori ke field database
 const categoryMapping = {
-  1: { field: 'perlawatanJemaat', imageField: 'fotoPerlawatanJemaat' },
-  2: { field: 'perlawatannonSDA', imageField: 'fotoPerlawatannonSDA' },
-  3: { field: 'perlawatanPendeta', imageField: 'fotoPerlawatanPendeta' },
-  4: { field: 'pelatihanUNI', imageField: 'fotoPelatihanUNI', optional: true },
-  5: { field: 'pelatihanKonferens', imageField: 'fotoPelatihanKonferens', optional: true },
-  6: { field: 'pelatihanPendeta', imageField: 'fotoPelatihanPendeta', optional: true },
-  7: { field: 'kelompokPeduli', imageField: 'fotoKelompokPeduli', optional: true },
-  8: { field: 'tamuKelompokPeduli', imageField: 'fotoTamuKelompok', optional: true },
-  9: { field: 'pembelajaranAlkitab', imageField: 'fotoPembelajaran', optional: true },
-  10: { field: 'baptisanBulanIni', imageField: 'fotoBaptisanBulanIni' },
-  11: { field: 'seminarKhotbah', imageField: 'fotoSeminarKhotbah', optional: true },
-  12: { field: 'penanamanGereja', imageField: 'fotoPenanamanGereja', optional: true },
-  13: { field: 'komiteJemaat', imageField: 'fotoKomiteJemaat' }
+  1: { field: "perlawatanJemaat", imageField: "fotoPerlawatanJemaat" },
+  2: { field: "perlawatannonSDA", imageField: "fotoPerlawatannonSDA" },
+  3: { field: "perlawatanPendeta", imageField: "fotoPerlawatanPendeta" },
+  4: { field: "pelatihanUNI", imageField: "fotoPelatihanUNI", optional: true },
+  5: {
+    field: "pelatihanKonferens",
+    imageField: "fotoPelatihanKonferens",
+    optional: true,
+  },
+  6: {
+    field: "pelatihanPendeta",
+    imageField: "fotoPelatihanPendeta",
+    optional: true,
+  },
+  7: {
+    field: "kelompokPeduli",
+    imageField: "fotoKelompokPeduli",
+    optional: true,
+  },
+  8: {
+    field: "tamuKelompokPeduli",
+    imageField: "fotoTamuKelompok",
+    optional: true,
+  },
+  9: {
+    field: "pembelajaranAlkitab",
+    imageField: "fotoPembelajaran",
+    optional: true,
+  },
+  10: { field: "baptisanBulanIni", imageField: "fotoBaptisanBulanIni" },
+  11: {
+    field: "seminarKhotbah",
+    imageField: "fotoSeminarKhotbah",
+    optional: true,
+  },
+  12: {
+    field: "penanamanGereja",
+    imageField: "fotoPenanamanGereja",
+    optional: true,
+  },
+  13: { field: "komiteJemaat", imageField: "fotoKomiteJemaat" },
 };
 
 // Objek untuk menyimpan hasil validasi sementara
 let validationResults = {};
 let inputData = {};
 
-
 // ✅ Endpoint untuk Validasi Gambar
 const validateFormData = () => async (req, res) => {
   try {
     const { category } = req.params;
     const mapping = categoryMapping[category];
-    
+
     if (!mapping) {
-      return res.status(400).json({ message: 'Kategori tidak valid' });
+      return res.status(400).json({ message: "Kategori tidak valid" });
     }
 
     const count = req.body[mapping.field];
     const file = req.file;
 
-
     // Handle field optional
     if (mapping.optional) {
-      if (!count || count === '0') {
+      if (!count || count === "0") {
         // Jika tidak diisi, set ke 0 dan skip validasi
         inputData[mapping.field] = 0;
         inputData[mapping.imageField] = null;
         validationResults[category] = { skipped: true };
         return res.status(200).json({
           message: `Field optional ${mapping.field} di-set ke 0`,
-          skipped: true
+          skipped: true,
         });
       }
     }
 
     if (!count || isNaN(count)) {
-      return res.status(400).json({ message: `Field ${mapping.field} harus berupa angka.` });
+      return res
+        .status(400)
+        .json({ message: `Field ${mapping.field} harus berupa angka.` });
     }
 
     if (!file) {
-      return res.status(400).json({ message: "Gambar diperlukan untuk validasi." });
+      return res
+        .status(400)
+        .json({ message: "Gambar diperlukan untuk validasi." });
     }
 
     console.log(`Uploading image for category ${category}...`);
     const imageUrl = await uploadImageToImageKit(file);
 
     console.log("Validating with GPT...");
-    const validationResult = await validateImageWithGPT(imageUrl, parseInt(count, 10));
+    const validationResult = await validateImageWithGPT(
+      imageUrl,
+      parseInt(count, 10)
+    );
 
     validationResults[category] = {
       valid: validationResult.valid,
@@ -88,7 +125,9 @@ const validateFormData = () => async (req, res) => {
     });
   } catch (error) {
     console.error(`Error in validateFormData:`, error.message);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -97,18 +136,18 @@ const validateDraftField = async (req, res) => {
   try {
     const { category, draftId } = req.params;
     const mapping = categoryMapping[category];
-    
+
     if (!mapping) {
-      return res.status(400).json({ message: 'Kategori tidak valid' });
+      return res.status(400).json({ message: "Kategori tidak valid" });
     }
 
     // Check if draft exists
     const draft = await prisma.draft.findUnique({
-      where: { id: parseInt(draftId, 10) }
+      where: { id: parseInt(draftId, 10) },
     });
 
     if (!draft) {
-      return res.status(404).json({ message: 'Draft tidak ditemukan' });
+      return res.status(404).json({ message: "Draft tidak ditemukan" });
     }
 
     const count = req.body[mapping.field];
@@ -116,40 +155,49 @@ const validateDraftField = async (req, res) => {
 
     // Handle optional fields
     if (mapping.optional) {
-      if (!count || count === '0') {
+      if (!count || count === "0") {
         // Update draft with zero value for optional field
         await prisma.draft.update({
           where: { id: parseInt(draftId, 10) },
           data: {
             [mapping.field]: 0,
-            [mapping.imageField]: null
-          }
+            [mapping.imageField]: null,
+          },
         });
 
         return res.status(200).json({
           message: `Field optional ${mapping.field} di-set ke 0`,
           skipped: true,
           draft: await prisma.draft.findUnique({
-            where: { id: parseInt(draftId, 10) }
-          })
+            where: { id: parseInt(draftId, 10) },
+          }),
         });
       }
     }
 
     if (!count || isNaN(count)) {
-      return res.status(400).json({ message: `Field ${mapping.field} harus berupa angka.` });
+      return res
+        .status(400)
+        .json({ message: `Field ${mapping.field} harus berupa angka.` });
     }
 
     if (!file) {
-      return res.status(400).json({ message: "Gambar diperlukan untuk validasi." });
+      return res
+        .status(400)
+        .json({ message: "Gambar diperlukan untuk validasi." });
     }
 
     // Upload and validate image
-    console.log(`Uploading image for draft ${draftId}, category ${category}...`);
+    console.log(
+      `Uploading image for draft ${draftId}, category ${category}...`
+    );
     const imageUrl = await uploadImageToImageKit(file);
 
     console.log("Validating with GPT...");
-    const validationResult = await validateImageWithGPT(imageUrl, parseInt(count, 10));
+    const validationResult = await validateImageWithGPT(
+      imageUrl,
+      parseInt(count, 10)
+    );
 
     // Update draft with validated field data
     if (validationResult.valid) {
@@ -157,27 +205,31 @@ const validateDraftField = async (req, res) => {
         where: { id: parseInt(draftId, 10) },
         data: {
           [mapping.field]: parseInt(count, 10),
-          [mapping.imageField]: imageUrl
-        }
+          [mapping.imageField]: imageUrl,
+        },
       });
     }
 
     // Get updated draft
     const updatedDraft = await prisma.draft.findUnique({
-      where: { id: parseInt(draftId, 10) }
+      where: { id: parseInt(draftId, 10) },
     });
 
     res.status(200).json({
-      message: `Validation ${validationResult.valid ? 'successful' : 'failed'} untuk kategori ${category}`,
+      message: `Validation ${
+        validationResult.valid ? "successful" : "failed"
+      } untuk kategori ${category}`,
       valid: validationResult.valid,
       category,
       imageUrl,
       count: parseInt(count, 10),
-      draft: updatedDraft
+      draft: updatedDraft,
     });
   } catch (error) {
     console.error(`Error in validateDraftField:`, error.message);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -189,28 +241,30 @@ const saveFormDataToDB = async (req, res) => {
   try {
     // 1. Cek kategori wajib yang belum divalidasi atau validasinya gagal
     const requiredCategories = Object.values(categoryMapping)
-      .filter(m => !m.optional)
-      .map(m => Object.keys(categoryMapping).find(key => categoryMapping[key] === m));
+      .filter((m) => !m.optional)
+      .map((m) =>
+        Object.keys(categoryMapping).find((key) => categoryMapping[key] === m)
+      );
 
     const invalidFields = requiredCategories
-      .filter(cat => {
+      .filter((cat) => {
         const result = validationResults[cat];
         return !result || result.valid === false;
       })
-      .map(cat => ({
+      .map((cat) => ({
         field: categoryMapping[cat].field,
-        status: !validationResults[cat] ? "Belum divalidasi" : "Validasi gagal"
+        status: !validationResults[cat] ? "Belum divalidasi" : "Validasi gagal",
       }));
 
     if (invalidFields.length > 0) {
       return res.status(400).json({
         message: "Validasi gagal untuk field wajib",
-        invalidFields
+        invalidFields,
       });
     }
 
     // Handle field optional yang tidak diisi
-    Object.values(categoryMapping).forEach(m => {
+    Object.values(categoryMapping).forEach((m) => {
       if (m.optional && !inputData[m.field]) {
         inputData[m.field] = 0;
         inputData[m.imageField] = null;
@@ -222,25 +276,27 @@ const saveFormDataToDB = async (req, res) => {
 
     const { tahun } = req.body;
 
-
     // Validasi bulan
-    if (!bulan || typeof bulan !== 'string' || bulan.trim() === '') {
-      return res.status(400).json({ 
-        message: "Bulan wajib diisi"
+    if (!bulan || typeof bulan !== "string" || bulan.trim() === "") {
+      return res.status(400).json({
+        message: "Bulan wajib diisi",
       });
     }
 
-if (!tahun || isNaN(tahun)) {
-  return res.status(400).json({ 
-    message: "Tahun wajib diisi dan harus angka"
-  });
-}
+    if (!tahun || isNaN(tahun)) {
+      return res.status(400).json({
+        message: "Tahun wajib diisi dan harus angka",
+      });
+    }
     // Satukan data
     const finalData = {
       ...inputData,
       userId,
       bulan: bulan.trim(),
       tahun: parseInt(tahun, 10),
+      jemaat: req.body.jemaat || "",
+      wilayah: req.body.wilayah || "",
+      ketuaJemaatName: req.body.ketuaJemaatName || "",
       hadirSabat2: req.body.hadirSabat2,
       hadirSabat7: req.body.hadirSabat7,
       persentaseKehadiranBulan: req.body.persentaseKehadiranBulan,
@@ -252,7 +308,7 @@ if (!tahun || isNaN(tahun)) {
       berkhotbahSabat: req.body.berkhotbahSabat,
       berkhotbahSabat7: req.body.berkhotbahSabat7,
       persentasiDiakones: req.body.persentasiDiakones,
-      jumlahPersembahan: req.body.jumlahPersembahan
+      jumlahPersembahan: req.body.jumlahPersembahan,
     };
 
     // Simpan data ke database
@@ -263,10 +319,10 @@ if (!tahun || isNaN(tahun)) {
       // 1. Ambil penerima
       recipients = await prisma.user.findMany({
         where: {
-          role: { in: ['SEKRETARIS', 'PENDETA'] },
-          phone: { not: null, startsWith: '08' }
+          role: { in: ["SEKRETARIS", "PENDETA"] },
+          phone: { not: null, startsWith: "08" },
         },
-        select: { phone: true, name: true, role: true }
+        select: { phone: true, name: true, role: true },
       });
 
       // 2. Siapkan pesan
@@ -276,7 +332,9 @@ if (!tahun || isNaN(tahun)) {
       const sendPromises = recipients.map(async (user) => {
         try {
           await sendWhatsAppNotification(user.phone, message);
-          console.log(`Notifikasi terkirim ke ${user.name} (${user.role}) - ${user.phone}`);
+          console.log(
+            `Notifikasi terkirim ke ${user.name} (${user.role}) - ${user.phone}`
+          );
         } catch (error) {
           console.error(`Gagal mengirim ke ${user.phone}:`, error.message);
         }
@@ -285,33 +343,35 @@ if (!tahun || isNaN(tahun)) {
       await Promise.all(sendPromises);
       console.log(`Total notifikasi terkirim: ${recipients.length}`);
     } catch (error) {
-      console.error('Error dalam proses notifikasi:', error);
+      console.error("Error dalam proses notifikasi:", error);
       // Tetap lanjutkan meski gagal kirim notifikasi
     }
 
-  // Reset data
-  validationResults = {};
-  inputData = {};
+    // Reset data
+    validationResults = {};
+    inputData = {};
 
- // Ambil nama user yang menginput
- const user = await prisma.user.findUnique({
-  where: { id: userId },
-  select: { name: true }
-});
+    // Ambil nama user yang menginput
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
 
-// Kembalikan respon
-res.status(201).json({
-  message: "Data berhasil disimpan",
-  data: {
-    ...formData,
-    inputBy: user.name // Tambahkan nama penginput
-  },
-  notificationSent: recipients ? recipients.length : 0
-});
-} catch (error) {
-console.error("Error in saveFormDataToDB:", error.message);
-res.status(500).json({ message: "Internal server error", error: error.message });
-}
+    // Kembalikan respon
+    res.status(201).json({
+      message: "Data berhasil disimpan",
+      data: {
+        ...formData,
+        inputBy: user.name, // Tambahkan nama penginput
+      },
+      notificationSent: recipients ? recipients.length : 0,
+    });
+  } catch (error) {
+    console.error("Error in saveFormDataToDB:", error.message);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
 };
 
 // ✅ GET: Mengambil semua data form yang telah disimpan
@@ -321,25 +381,29 @@ const getAllFormData = async (req, res) => {
       include: {
         user: {
           select: {
-            name: true // Hanya ambil nama user
-          }
-        }
-      }
+            name: true, // Hanya ambil nama user
+          },
+        },
+      },
     });
 
     // Format ulang data untuk menyertakan username dan hapus objek user
-    const formattedData = formData.map(data => {
+    const formattedData = formData.map((data) => {
       const { user, ...rest } = data; // Pisahkan objek user dari data lainnya
       return {
         ...rest,
-        username: user.name // Tambahkan username ke dalam respons
+        username: user.name, // Tambahkan username ke dalam respons
       };
     });
 
-    res.status(200).json({ message: "Data retrieved successfully", data: formattedData });
+    res
+      .status(200)
+      .json({ message: "Data retrieved successfully", data: formattedData });
   } catch (error) {
     console.error("Error in getAllFormData:", error.message);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -348,15 +412,15 @@ const getFormDataByBulan = async (req, res) => {
   try {
     const { bulan, tahun } = req.params;
     const formData = await prisma.formData.findMany({
-      where: { 
+      where: {
         bulan: bulan,
-        tahun: parseInt(tahun) 
+        tahun: parseInt(tahun),
       },
       include: {
         user: {
-          select: { name: true }
-        }
-      }
+          select: { name: true },
+        },
+      },
     });
 
     if (!formData.length) {
@@ -364,18 +428,22 @@ const getFormDataByBulan = async (req, res) => {
     }
 
     // Format ulang data untuk menyertakan username dan hapus objek user
-    const formattedData = formData.map(data => {
+    const formattedData = formData.map((data) => {
       const { user, ...rest } = data; // Pisahkan objek user dari data lainnya
       return {
         ...rest,
-        username: user.name // Tambahkan username ke dalam respons
+        username: user.name, // Tambahkan username ke dalam respons
       };
     });
 
-    res.status(200).json({ message: "Data retrieved successfully", data: formattedData });
+    res
+      .status(200)
+      .json({ message: "Data retrieved successfully", data: formattedData });
   } catch (error) {
     console.error("Error in getFormDataByBulan:", error.message);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -390,10 +458,10 @@ const getFormDataById = async (req, res) => {
       include: {
         user: {
           select: {
-            name: true // Hanya ambil nama user
-          }
-        }
-      }
+            name: true, // Hanya ambil nama user
+          },
+        },
+      },
     });
 
     if (!formData) {
@@ -404,51 +472,117 @@ const getFormDataById = async (req, res) => {
     const { user, ...rest } = formData;
     const formattedData = {
       ...rest,
-      username: user.name // Tambahkan username ke dalam respons
+      username: user.name, // Tambahkan username ke dalam respons
     };
 
-    res.status(200).json({ message: "Data retrieved successfully", data: formattedData });
+    res
+      .status(200)
+      .json({ message: "Data retrieved successfully", data: formattedData });
   } catch (error) {
     console.error("Error in getFormDataById:", error.message);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
 const saveToDraft = async (req, res) => {
   try {
-    const userId = req.user.id; // Sudah numerik setelah middleware diperbaiki
-    const { bulan, tahun } = req.body;
+    const userId = req.user.id;
+    const {
+      bulan,
+      tahun,
+      jemaat,
+      wilayah,
+      ketuaJemaatName,
+      hadirSabat2,
+      hadirSabat7,
+      persentaseKehadiranBulan,
+      perlawatanJemaat,
+      perlawatannonSDA,
+      perlawatanPendeta,
+      pelatihanUNI,
+      pelatihanKonferens,
+      pelatihanPendeta,
+      kelompokPeduli,
+      tamuKelompokPeduli,
+      pembelajaranAlkitab,
+      jumlahKKR,
+      targetBaptisan,
+      baptisanBulanIni,
+      seminarKhotbah,
+      retreatPendeta,
+      penanamanGereja,
+      ketuaJemaat,
+      jumlahDiakon,
+      berkhotbahSabat,
+      berkhotbahSabat7,
+      persentasiDiakones,
+      jumlahPersembahan,
+      komiteJemaat,
+      // Only include fields that exist in your schema
+    } = req.body;
 
-    // Validasi user (pastikan userId adalah angka)
+    // Validate user
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
     });
 
     if (!user) {
       return res.status(404).json({ message: "User tidak ditemukan" });
     }
 
-    // Validasi input
-    if (!bulan || typeof bulan !== 'string') {
+    // Validate input
+    if (!bulan || typeof bulan !== "string") {
       return res.status(400).json({ message: "Field bulan wajib diisi" });
     }
-    
+
     if (!tahun || isNaN(tahun)) {
-      return res.status(400).json({ message: "Field tahun wajib diisi dan harus angka" });
+      return res
+        .status(400)
+        .json({ message: "Field tahun wajib diisi dan harus angka" });
     }
 
     const draftData = {
-      ...req.body,
       userId,
       bulan: bulan.trim(),
-      tahun: parseInt(tahun, 10) // Konversi ke number
+      tahun: parseInt(tahun, 10),
+      jemaat: jemaat || "",
+      wilayah: wilayah || "",
+      ketuaJemaatName: ketuaJemaatName || "",
+      hadirSabat2: parseInt(hadirSabat2) || 0,
+      hadirSabat7: parseInt(hadirSabat7) || 0,
+      persentaseKehadiranBulan: parseFloat(persentaseKehadiranBulan) || 0,
+      // Include all other fields from your schema
+      perlawatanJemaat: parseInt(perlawatanJemaat) || 0,
+      perlawatannonSDA: parseInt(perlawatannonSDA) || 0,
+      perlawatanPendeta: parseInt(perlawatanPendeta) || 0,
+      pelatihanUNI: parseInt(pelatihanUNI) || 0,
+      pelatihanKonferens: parseInt(pelatihanKonferens) || 0,
+      pelatihanPendeta: parseInt(pelatihanPendeta) || 0,
+      kelompokPeduli: parseInt(kelompokPeduli) || 0,
+      tamuKelompokPeduli: parseInt(tamuKelompokPeduli) || 0,
+      pembelajaranAlkitab: parseInt(pembelajaranAlkitab) || 0,
+      jumlahKKR: parseInt(jumlahKKR) || 0,
+      targetBaptisan: parseInt(targetBaptisan) || 0,
+      baptisanBulanIni: parseInt(baptisanBulanIni) || 0,
+      seminarKhotbah: parseInt(seminarKhotbah) || 0,
+      retreatPendeta: parseInt(retreatPendeta) || 0,
+      penanamanGereja: parseInt(penanamanGereja) || 0,
+      ketuaJemaat: parseInt(ketuaJemaat) || 0,
+      jumlahDiakon: parseInt(jumlahDiakon) || 0,
+      berkhotbahSabat: parseInt(berkhotbahSabat) || 0,
+      berkhotbahSabat7: parseInt(berkhotbahSabat7) || 0,
+      persentasiDiakones: parseFloat(persentasiDiakones) || 0,
+      jumlahPersembahan: parseInt(jumlahPersembahan) || 0,
+      komiteJemaat: parseInt(komiteJemaat) || 0,
     };
 
     const draft = await saveDraft(draftData);
-    
+
     res.status(201).json({
       message: "Draft berhasil disimpan",
-      data: draft
+      data: draft,
     });
   } catch (error) {
     console.error("Error in saveToDraft:", error.message);
@@ -463,7 +597,7 @@ const sendDraftToForm = async (req, res) => {
 
     // Get the draft
     const draft = await prisma.draft.findUnique({
-      where: { id: parseInt(id, 10) }
+      where: { id: parseInt(id, 10) },
     });
 
     if (!draft) {
@@ -472,29 +606,29 @@ const sendDraftToForm = async (req, res) => {
 
     // Identify required fields based on categoryMapping
     const requiredFields = [];
-    
+
     // Loop through all category mappings to find required fields
     for (const [categoryId, config] of Object.entries(categoryMapping)) {
       if (!config.optional) {
         requiredFields.push({
           categoryId,
           field: config.field,
-          imageField: config.imageField
+          imageField: config.imageField,
         });
       }
     }
 
     // Check if all required fields are populated in the draft
     const invalidFields = [];
-    
+
     for (const { field, imageField } of requiredFields) {
       const fieldValue = draft[field];
       const imageUrl = draft[imageField];
-      
+
       if (!fieldValue || fieldValue <= 0 || !imageUrl) {
         invalidFields.push({
           field,
-          status: "Belum divalidasi"
+          status: "Belum divalidasi",
         });
       }
     }
@@ -503,30 +637,32 @@ const sendDraftToForm = async (req, res) => {
     if (invalidFields.length > 0) {
       return res.status(400).json({
         message: "Validasi gagal untuk field wajib",
-        invalidFields
+        invalidFields,
       });
     }
 
     // Move draft to FormData
     try {
       const formData = await moveDraftToForm(id);
-      
+
       // Send notifications
       try {
         const recipients = await prisma.user.findMany({
           where: {
-            role: { in: ['SEKRETARIS', 'PENDETA'] },
-            phone: { not: null, startsWith: '08' }
+            role: { in: ["SEKRETARIS", "PENDETA"] },
+            phone: { not: null, startsWith: "08" },
           },
-          select: { phone: true, name: true, role: true }
+          select: { phone: true, name: true, role: true },
         });
 
         const message = `Form telah berhasil di Inputkan pada bulan ${formData.bulan}`;
-        
+
         const sendPromises = recipients.map(async (user) => {
           try {
             await sendWhatsAppNotification(user.phone, message);
-            console.log(`Notifikasi terkirim ke ${user.name} (${user.role}) - ${user.phone}`);
+            console.log(
+              `Notifikasi terkirim ke ${user.name} (${user.role}) - ${user.phone}`
+            );
           } catch (error) {
             console.error(`Gagal mengirim ke ${user.phone}:`, error.message);
           }
@@ -534,23 +670,25 @@ const sendDraftToForm = async (req, res) => {
 
         await Promise.all(sendPromises);
       } catch (error) {
-        console.error('Error dalam proses notifikasi:', error);
+        console.error("Error dalam proses notifikasi:", error);
         // Continue even if notification fails
       }
 
       // Return success response
       res.status(200).json({
         message: "Draft berhasil dikirim ke form",
-        data: formData
+        data: formData,
       });
     } catch (error) {
-      return res.status(400).json({ 
-        message: error.message 
+      return res.status(400).json({
+        message: error.message,
       });
     }
   } catch (error) {
     console.error("Error in sendDraftToForm:", error.message);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -558,12 +696,12 @@ const sendDraftToForm = async (req, res) => {
 const getAllDrafts = async (req, res) => {
   try {
     const drafts = await prisma.draft.findMany({
-      include: { user: { select: { name: true } } } // <- Kurung ditutup dengan benar
+      include: { user: { select: { name: true } } }, // <- Kurung ditutup dengan benar
     });
-    
-    res.status(200).json({ 
-      message: "Drafts retrieved", 
-      data: drafts.map(d => ({ ...d, username: d.user.name })) 
+
+    res.status(200).json({
+      message: "Drafts retrieved",
+      data: drafts.map((d) => ({ ...d, username: d.user.name })),
     });
   } catch (error) {
     console.error("Error in getAllDrafts:", error.message);
@@ -576,12 +714,12 @@ const getDraftByBulan = async (req, res) => {
   try {
     const drafts = await prisma.draft.findMany({
       where: { bulan: req.params.bulan },
-      include: { user: { select: { name: true } } }
-    })
-    
-    res.status(200).json({ 
-      message: "Drafts retrieved", 
-      data: drafts.map(d => ({ ...d, username: d.user.name })) 
+      include: { user: { select: { name: true } } },
+    });
+
+    res.status(200).json({
+      message: "Drafts retrieved",
+      data: drafts.map((d) => ({ ...d, username: d.user.name })),
     });
   } catch (error) {
     console.error("Error in getDraftByBulan:", error.message);
@@ -594,12 +732,12 @@ const getDraftById = async (req, res) => {
   try {
     const draft = await prisma.draft.findUnique({
       where: { id: parseInt(req.params.id, 10) },
-      include: { user: { select: { name: true } } }
+      include: { user: { select: { name: true } } },
     });
-    
-    res.status(200).json({ 
-      message: "Draft retrieved", 
-      data: { ...draft, username: draft.user.name } 
+
+    res.status(200).json({
+      message: "Draft retrieved",
+      data: { ...draft, username: draft.user.name },
     });
   } catch (error) {
     console.error("Error in getDraftById:", error.message);
@@ -613,26 +751,26 @@ const approveFormData = async (req, res) => {
     const { id } = req.params;
 
     // Cek role user
-    if (req.user.role !== 'SEKRETARIS') {
-      return res.status(403).json({ 
-        message: "Hanya Sekretaris yang dapat melakukan approval" 
+    if (req.user.role !== "SEKRETARIS") {
+      return res.status(403).json({
+        message: "Hanya Sekretaris yang dapat melakukan approval",
       });
     }
 
     // Cari data form yang akan diapprove
     const formData = await prisma.formData.findUnique({
       where: { id: parseInt(id, 10) },
-      include: { 
-        user: { 
-          select: { 
+      include: {
+        user: {
+          select: {
             name: true,
             phone: true, // Tambahkan phone untuk notifikasi
-            id: true
-          } 
-        } 
-      }
+            id: true,
+          },
+        },
+      },
     });
-    
+
     if (!formData) {
       return res.status(404).json({ message: "Data tidak ditemukan" });
     }
@@ -640,13 +778,13 @@ const approveFormData = async (req, res) => {
     // Update status validasi
     const updatedData = await prisma.formData.update({
       where: { id: parseInt(id, 10) },
-      data: { valid: true }
+      data: { valid: true },
     });
 
     // Format response (tanpa mengubah data asli formData)
-    const formattedData = { 
-      ...updatedData, 
-      username: formData.user.name 
+    const formattedData = {
+      ...updatedData,
+      username: formData.user.name,
     };
 
     // Kirim notifikasi WhatsApp ke pengguna yang mengunggah draft
@@ -654,7 +792,9 @@ const approveFormData = async (req, res) => {
       if (formData.user.phone) {
         const message = `Laporan pada bulan ${formData.bulan} telah diterima`;
         await sendWhatsAppNotification(formData.user.phone, message);
-        console.log(`Notifikasi terkirim ke ${formData.user.name} (${formData.user.phone})`);
+        console.log(
+          `Notifikasi terkirim ke ${formData.user.name} (${formData.user.phone})`
+        );
       }
     } catch (notificationError) {
       // Notifikasi gagal, tapi tidak menghentikan proses
@@ -665,13 +805,13 @@ const approveFormData = async (req, res) => {
     res.status(200).json({
       message: "Data berhasil divalidasi dan disetujui",
       data: formattedData,
-      notificationSent: formData.user.phone ? true : false
+      notificationSent: formData.user.phone ? true : false,
     });
   } catch (error) {
     console.error("Error in approveFormData:", error.message);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Gagal melakukan approval data",
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -681,42 +821,46 @@ const getApprovedFormData = async (req, res) => {
   try {
     const approvedData = await prisma.formData.findMany({
       where: { valid: true },
-      include: { 
-        user: { 
-          select: { 
-            name: true 
-          } 
-        } 
-      } // Perbaikan penutupan kurung yang benar
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      }, // Perbaikan penutupan kurung yang benar
     });
 
     // Format ulang data
-    const formattedData = approvedData.map(data => ({
+    const formattedData = approvedData.map((data) => ({
       ...data,
-      username: data.user.name
+      username: data.user.name,
     }));
 
-    res.status(200).json({ 
+    res.status(200).json({
       message: "Data approved berhasil diambil",
-      data: formattedData 
+      data: formattedData,
     });
   } catch (error) {
     console.error("Error in getApprovedFormData:", error.message);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Gagal mengambil data approved",
-      error: error.message 
+      error: error.message,
     });
   }
 };
 
-
-
-
-
-module.exports = { validateFormData, 
-  saveFormDataToDB,  getFormDataByBulan,
-  getAllFormData,getFormDataById, saveToDraft,
+module.exports = {
+  validateFormData,
+  saveFormDataToDB,
+  getFormDataByBulan,
+  getAllFormData,
+  getFormDataById,
+  saveToDraft,
   sendDraftToForm,
   getAllDrafts,
   getDraftByBulan,
-  getDraftById,validateDraftField, getApprovedFormData, approveFormData};
+  getDraftById,
+  validateDraftField,
+  getApprovedFormData,
+  approveFormData,
+};
