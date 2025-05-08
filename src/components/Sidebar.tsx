@@ -1,5 +1,6 @@
+// Updated Sidebar.tsx
 import { NavLink } from "react-router-dom";
-import { Home,ClipboardList, History, LogOut, User, FileText } from "lucide-react";
+import { Home, ClipboardList, History, LogOut, User, FileText, Video } from "lucide-react"; // Added Video icon
 import { clearSession } from "../utils/session";
 
 const Sidebar = () => {
@@ -73,6 +74,23 @@ const Sidebar = () => {
           <History className="mr-3" size={20} />
           History
         </NavLink>
+
+        {/* Tutorial Link - New */}
+        <NavLink
+          to="/dashboard/tutorial"
+          end
+          className={({ isActive }) =>
+            `flex items-center p-3 rounded-lg transition ${
+              isActive
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-200"
+            }`
+          }
+        >
+          <Video className="mr-3" size={20} />
+          Tutorial
+        </NavLink>
+
         <NavLink
           to="/dashboard/profile"
           end

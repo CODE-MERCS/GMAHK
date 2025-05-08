@@ -1,5 +1,6 @@
+// Updated SidebarKetuaDepartemen.tsx
 import { NavLink } from "react-router-dom";
-import { Home, FileText, LogOut, User } from "lucide-react";
+import { Home, FileText, LogOut, User, Video } from "lucide-react"; // Added Video icon
 import { clearSession } from "../utils/session";
 
 const SidebarKetuaDepartemen = () => {
@@ -43,6 +44,22 @@ const SidebarKetuaDepartemen = () => {
         >
           <FileText className="mr-3" size={20} />
           Lihat Laporan
+        </NavLink>
+        
+        {/* Tutorial Link - New */}
+        <NavLink
+          to="/ketuadepartemen/tutorial"
+          end
+          className={({ isActive }) =>
+            `flex items-center p-3 rounded-lg transition ${
+              isActive
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-200"
+            }`
+          }
+        >
+          <Video className="mr-3" size={20} />
+          Tutorial
         </NavLink>
         
         <NavLink

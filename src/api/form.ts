@@ -1,5 +1,5 @@
 import axios from "axios";
-const API_BASE_URL = "https://gmahk-gsa.vercel.app/form";
+const API_BASE_URL = "https://gmahkgas.vercel.app/form";
 
 export const getAuthToken = () => {
   return localStorage.getItem("token");
@@ -13,11 +13,14 @@ export const saveFormData = async (formData: Record<string, any>) => {
     // 🔹 Pastikan bulan ada dan dalam format string lowercase
     const finalData = {
       bulan: formData["bulan"] ? formData["bulan"].toLowerCase().trim() : "",
+      tahun: formData["tahun"] ? Number(formData["tahun"]) : new Date().getFullYear(),
+      jemaat: formData["jemaat"] || "",
+      wilayah: formData["wilayah"] || "",
+      ketuaJemaatName: formData["ketuaJemaatName"] || "",
       ...Object.fromEntries(
-        Object.entries(formData).map(([key, value]) => [
-          key,
-          key !== "bulan" ? Number(value) || 0 : value, // Konversi selain bulan ke number
-        ])
+        Object.entries(formData)
+          .filter(([key]) => key !== "bulan" && key !== "tahun" && key !== "jemaat" && key !== "wilayah" && key !== "ketuaJemaatName")
+          .map(([key, value]) => [key, Number(value) || 0])
       ),
     };
 
@@ -224,9 +227,12 @@ export const saveToDraft = async (formData: Record<string, any>) => {
     const finalData = {
       bulan: formData["bulan"] ? formData["bulan"].toLowerCase().trim() : "",
       tahun: formData["tahun"] ? Number(formData["tahun"]) : new Date().getFullYear(),
+      jemaat: formData["jemaat"] || "",
+      wilayah: formData["wilayah"] || "",
+      ketuaJemaatName: formData["ketuaJemaatName"] || "",
       ...Object.fromEntries(
         Object.entries(formData)
-          .filter(([key]) => key !== "bulan" && key !== "tahun")
+          .filter(([key]) => key !== "bulan" && key !== "tahun" && key !== "jemaat" && key !== "wilayah" && key !== "ketuaJemaatName")
           .map(([key, value]) => [key, Number(value) || 0])
       ),
     };

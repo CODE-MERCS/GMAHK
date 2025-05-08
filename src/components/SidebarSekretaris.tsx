@@ -1,5 +1,6 @@
+// Updated SidebarSekretaris.tsx
 import { NavLink } from "react-router-dom";
-import { Home, FileText, History, LogOut, User, CheckCircle } from "lucide-react";
+import { Home, FileText, History, LogOut, User, CheckCircle, Video } from "lucide-react"; // Added Video icon
 import { clearSession } from "../utils/session";
 
 const SidebarSekretaris = () => {
@@ -59,7 +60,21 @@ const SidebarSekretaris = () => {
           Laporan Diterima
         </NavLink>
 
-        
+        {/* Tutorial Link - New */}
+        <NavLink
+          to="/sekretaris/tutorial"
+          end
+          className={({ isActive }) =>
+            `flex items-center p-3 rounded-lg transition ${
+              isActive
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-200"
+            }`
+          }
+        >
+          <Video className="mr-3" size={20} />
+          Tutorial
+        </NavLink>
         
         <NavLink
           to="/sekretaris/profile"

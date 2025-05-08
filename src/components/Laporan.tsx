@@ -1,13 +1,23 @@
-import { useState, useEffect,  } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import withRole from "../middleware/WithRole";
-import { saveFormData, validateData , saveToDraft } from "../api/form";
+import { saveFormData, validateData, saveToDraft } from "../api/form";
 import toast, { Toaster } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
 const months = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
 ];
 // **FORMAT FORM YANG DI-SUBMIT**
 const formStructure = [
@@ -19,6 +29,21 @@ const formStructure = [
   {
     key: "bulan",
     label: "Bulan",
+    validate: false,
+  },
+  {
+    key: "jemaat",
+    label: "Jemaat",
+    validate: false,
+  },
+  {
+    key: "wilayah",
+    label: "Wilayah",
+    validate: false,
+  },
+  {
+    key: "ketuaJemaatName",
+    label: "Nama Ketua Jemaat",
     validate: false,
   },
   {
@@ -168,6 +193,12 @@ const formStructure = [
 
 const Laporan = () => {
   const navigate = useNavigate();
+  const [acknowledged, setAcknowledged] = useState(false);
+  const handleAcknowledgementChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setAcknowledged(e.target.checked);
+  };
   const [formData, setFormData] = useState<Record<string, string>>(() => {
     // Saat pertama kali load, ambil dari LocalStorage
     const savedData = localStorage.getItem("formData");
@@ -181,7 +212,6 @@ const Laporan = () => {
   const [saving, setSaving] = useState(false);
   const [draftSaving, setDraftSaving] = useState(false);
 
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -190,7 +220,9 @@ const Laporan = () => {
   }, [navigate]);
 
   // **🔹 Handle Input Form**
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const newFormData = { ...formData, [e.target.name]: e.target.value };
     setFormData(newFormData);
     localStorage.setItem("formData", JSON.stringify(newFormData)); // Simpan ke LocalStorage
@@ -206,43 +238,55 @@ const Laporan = () => {
     }
   };
 
-// Tambahkan fungsi ini sebelum handleSubmit
-const handleSaveDraft = async () => {
-  setDraftSaving(true);
+  // Tambahkan fungsi ini sebelum handleSubmit
+  const handleSaveDraft = async () => {
+    setDraftSaving(true);
 
-  // Validasi tahun dan bulan
-  if (!formData["tahun"] || isNaN(Number(formData["tahun"]))) {
-    toast.error("⚠️ Harap masukkan tahun yang valid!");
+    // Validasi tahun dan bulan
+    if (!formData["tahun"] || isNaN(Number(formData["tahun"]))) {
+      toast.error("⚠️ Harap masukkan tahun yang valid!");
+      setDraftSaving(false);
+      return;
+    }
+
+    if (!formData["bulan"] || typeof formData["bulan"] !== "string") {
+      toast.error("⚠️ Harap pilih bulan sebelum menyimpan draft!");
+      setDraftSaving(false);
+      return;
+    }
+
+    // Format data
+    const finalData = {
+      bulan: formData["bulan"] ? formData["bulan"].toLowerCase().trim() : "",
+      tahun: formData["tahun"]
+        ? Number(formData["tahun"])
+        : new Date().getFullYear(),
+      jemaat: formData["jemaat"] || "",
+      wilayah: formData["wilayah"] || "",
+      ketuaJemaatName: formData["ketuaJemaatName"] || "",
+      ...Object.fromEntries(
+        Object.entries(formData)
+          .filter(
+            ([key]) =>
+              key !== "bulan" &&
+              key !== "tahun" &&
+              key !== "jemaat" &&
+              key !== "wilayah" &&
+              key !== "ketuaJemaatName"
+          )
+          .map(([key, value]) => [key, Number(value) || 0])
+      ),
+    };
+
+    try {
+      await saveToDraft(finalData);
+      toast.success("✅ Draft berhasil disimpan!");
+    } catch (error) {
+      toast.error("❌ Gagal menyimpan draft");
+    }
+
     setDraftSaving(false);
-    return;
-  }
-
-  if (!formData["bulan"] || typeof formData["bulan"] !== "string") {
-    toast.error("⚠️ Harap pilih bulan sebelum menyimpan draft!");
-    setDraftSaving(false);
-    return;
-  }
-
-  const finalData = {
-    tahun: Number(formData["tahun"]),
-    bulan: formData["bulan"].trim().toLowerCase(),
-    ...Object.fromEntries(
-      Object.entries(formData)
-        .filter(([key]) => key !== "tahun" && key !== "bulan")
-        .map(([key, value]) => [key, Number(value) || 0])
-    ),
   };
-
-  try {
-    await saveToDraft(finalData);
-    toast.success("✅ Draft berhasil disimpan!");
-  } catch (error) {
-    toast.error("❌ Gagal menyimpan draft");
-  }
-
-  setDraftSaving(false);
-};
-
 
   // **🔹 Handle Validasi**
   const handleValidation = async (id: number, key: string) => {
@@ -270,22 +314,31 @@ const handleSaveDraft = async () => {
     setSaving(true);
 
     // Check if all required fields are validated
-  const requiredFields = ['perlawatanJemaat', 'perlawatannonSDA', 'perlawatanPendeta','baptisanBulanIni','komiteJemaat'];
-  const missingValidations = requiredFields.filter(field => !validations[field]?.valid);
-  
-  if (missingValidations.length > 0) {
-    toast.error(`⚠️ Harap validasi field berikut: ${missingValidations.join(', ')}`);
-    setSaving(false);
-    return;
-  }
+    const requiredFields = [
+      "perlawatanJemaat",
+      "perlawatannonSDA",
+      "perlawatanPendeta",
+      "baptisanBulanIni",
+      "komiteJemaat",
+    ];
+    const missingValidations = requiredFields.filter(
+      (field) => !validations[field]?.valid
+    );
 
-     // 🔹 Validasi tahun
-     if (!formData["tahun"] || isNaN(Number(formData["tahun"]))) {
-      toast.error("⚠️ Harap masukkan tahun yang valid!");
+    if (missingValidations.length > 0) {
+      toast.error(
+        `⚠️ Harap validasi field berikut: ${missingValidations.join(", ")}`
+      );
       setSaving(false);
       return;
     }
 
+    // 🔹 Validasi tahun
+    if (!formData["tahun"] || isNaN(Number(formData["tahun"]))) {
+      toast.error("⚠️ Harap masukkan tahun yang valid!");
+      setSaving(false);
+      return;
+    }
 
     // 🔹 Pastikan bulan valid
     if (!formData["bulan"] || typeof formData["bulan"] !== "string") {
@@ -295,12 +348,25 @@ const handleSaveDraft = async () => {
     }
 
     // 🔹 Format data untuk API
+    // Format data
     const finalData = {
-      tahun: Number(formData["tahun"]), // Konversi ke number
-      bulan: formData["bulan"].trim().toLowerCase(),
+      bulan: formData["bulan"] ? formData["bulan"].toLowerCase().trim() : "",
+      tahun: formData["tahun"]
+        ? Number(formData["tahun"])
+        : new Date().getFullYear(),
+      jemaat: formData["jemaat"] || "",
+      wilayah: formData["wilayah"] || "",
+      ketuaJemaatName: formData["ketuaJemaatName"] || "",
       ...Object.fromEntries(
         Object.entries(formData)
-          .filter(([key]) => key !== "tahun" && key !== "bulan")
+          .filter(
+            ([key]) =>
+              key !== "bulan" &&
+              key !== "tahun" &&
+              key !== "jemaat" &&
+              key !== "wilayah" &&
+              key !== "ketuaJemaatName"
+          )
           .map(([key, value]) => [key, Number(value) || 0])
       ),
     };
@@ -312,9 +378,11 @@ const handleSaveDraft = async () => {
       const response = await saveFormData(finalData);
       console.log("✅ Response API:", response);
       toast.success("✅ Data berhasil disimpan!");
-    } catch (error) {
-      console.error("❌ Gagal menyimpan data:", error);
-      toast.error("❌ Gagal menyimpan data. Periksa kembali input Anda.");
+    } catch (error: any) { // Add type annotation here
+      console.error("❌ Error details:", error.response?.data);
+      toast.error(`❌ Gagal menyimpan data: ${error.response?.data?.message || "Periksa kembali input Anda."}`);
+      // Log the full error object for debugging
+      console.error("Full error object:", error);
     }
 
     setSaving(false);
@@ -322,7 +390,7 @@ const handleSaveDraft = async () => {
 
   return (
     <div className="max-w-5xl mx-auto p-20 bg-white shadow-lg rounded-lg">
-       <Toaster position="top-center" reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} />
       <h1 className="text-3xl font-bold text-green-700 text-center mb-6">
         Laporan Bulanan Kependetaan
       </h1>
@@ -354,8 +422,8 @@ const handleSaveDraft = async () => {
                   </td>
                   <td className="p-3 border">{item.label}</td>
                   <td className="p-3 border">
-                  {item.key === "bulan" ? (
-                      // 🔹 Dropdown untuk memilih bulan
+                    {item.key === "bulan" ? (
+                      // Dropdown for bulan
                       <select
                         name="bulan"
                         value={formData["bulan"] || ""}
@@ -369,7 +437,19 @@ const handleSaveDraft = async () => {
                           </option>
                         ))}
                       </select>
+                    ) : item.key === "jemaat" ||
+                      item.key === "wilayah" ||
+                      item.key === "ketuaJemaatName" ? (
+                      // Text input for string fields
+                      <input
+                        type="text"
+                        name={item.key}
+                        value={formData[item.key] || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border"
+                      />
                     ) : (
+                      // Number input for numeric fields
                       <input
                         type="number"
                         name={item.key}
@@ -421,11 +501,23 @@ const handleSaveDraft = async () => {
           ))}
         </tbody>
       </table>
+      <div className="flex items-center mb-4 mt-6">
+        <input
+          type="checkbox"
+          id="acknowledgement"
+          checked={acknowledged}
+          onChange={handleAcknowledgementChange}
+          className="mr-2"
+        />
+        <label htmlFor="acknowledgement" className="text-gray-700">
+          Saya menyatakan bahwa Ketua Jemaat sudah mengetahui laporan ini
+        </label>
+      </div>
       <button
         onClick={handleSubmit}
         type="submit"
-        className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition mt-4 flex items-center justify-center"
-        disabled={saving} // Agar tidak bisa diklik berulang kali
+        className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition mt-4 flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+        disabled={saving || !acknowledged}
       >
         {saving ? (
           <span className="flex items-center">
@@ -438,20 +530,19 @@ const handleSaveDraft = async () => {
       </button>
 
       <button
-  onClick={handleSaveDraft}
-  className="w-full bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition mt-2 flex items-center justify-center"
-  disabled={draftSaving}
->
-  {draftSaving ? (
-    <span className="flex items-center">
-      <Loader2 className="animate-spin mr-2" size={18} />
-      Menyimpan Draft...
-    </span>
-  ) : (
-    "Simpan sebagai Draft"
-  )}
-</button>
-
+        onClick={handleSaveDraft}
+        className="w-full bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition mt-2 flex items-center justify-center"
+        disabled={draftSaving}
+      >
+        {draftSaving ? (
+          <span className="flex items-center">
+            <Loader2 className="animate-spin mr-2" size={18} />
+            Menyimpan Draft...
+          </span>
+        ) : (
+          "Simpan sebagai Draft"
+        )}
+      </button>
     </div>
   );
 };
