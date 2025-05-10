@@ -9,18 +9,8 @@ const TutorialKetuaDepartemen = () => {
   const tutorials = [
     {
       id: 1,
-      title: "Cara Melihat dan Memeriksa Laporan Pendeta",
-      videoSrc: "/videos/tutorial-ketua-laporan.mp4",
-    },
-    {
-      id: 2,
-      title: "Menggunakan Filter dan Pencarian Laporan",
-      videoSrc: "/videos/tutorial-ketua-filter.mp4",
-    },
-    {
-      id: 3,
-      title: "Mengakses Statistik dan Data Historis",
-      videoSrc: "/videos/tutorial-ketua-statistik.mp4",
+      title: "Cara Melihat dan Memeriksa Laporan",
+      videoSrc: "/videos/7.mP4",
     },
   ];
 

@@ -10,17 +10,17 @@ const TutorialPendeta = () => {
     {
       id: 1,
       title: "Cara Mengisi Laporan Bulanan",
-      videoSrc: "/public/videos/1.mkv",
+      videoSrc: "/videos/1.mP4",
     },
     {
       id: 2,
       title: "Menggunakan Fitur Draft",
-      videoSrc: "/videos/tutorial-pendeta-draft.mp4",
+      videoSrc: "/videos/2.mP4",
     },
     {
       id: 3,
       title: "Melihat History Laporan",
-      videoSrc: "/videos/tutorial-pendeta-history.mp4",
+      videoSrc: "/videos/3.mP4",
     },
   ];
 

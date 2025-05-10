@@ -45,15 +45,8 @@ const TutorialHomePage: React.FC<TutorialHomePageProps> = ({ role }) => {
             icon: <Video size={20} />,
           },
           {
-            id: 2,
-            title: "Mengelola Laporan",
-            description: "Pelajari cara mengelola laporan yang sudah diterima.",
-            link: "/sekretaris/tutorial/kelola",
-            icon: <FileText size={20} />,
-          },
-          {
             id: 3,
-            title: "Melihat Statistik",
+            title: "Merngunduh Laporan",
             description: "Akses dan unduh data statistik dari semua laporan.",
             link: "/sekretaris/tutorial/statistik",
             icon: <BookOpen size={20} />,
@@ -64,23 +57,9 @@ const TutorialHomePage: React.FC<TutorialHomePageProps> = ({ role }) => {
           {
             id: 1,
             title: "Melihat Laporan",
-            description: "Lihat dan periksa laporan dari pendeta yang sudah diverifikasi.",
+            description: "Lihat dan periksa laporan dari pendeta yang sudah diverifikasi oleh sekretaris.",
             link: "/ketuadepartemen/tutorial/laporan",
             icon: <Video size={20} />,
-          },
-          {
-            id: 2,
-            title: "Filter dan Pencarian",
-            description: "Gunakan fitur filter dan pencarian untuk menemukan laporan tertentu.",
-            link: "/ketuadepartemen/tutorial/filter",
-            icon: <FileText size={20} />,
-          },
-          {
-            id: 3,
-            title: "Statistik dan Data",
-            description: "Akses statistik dan data historis dari semua laporan.",
-            link: "/ketuadepartemen/tutorial/statistik",
-            icon: <BookOpen size={20} />,
           },
         ];
       default:

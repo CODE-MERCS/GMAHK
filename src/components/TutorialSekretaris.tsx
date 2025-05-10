@@ -10,17 +10,13 @@ const TutorialSekretaris = () => {
     {
       id: 1,
       title: "Cara Menerima dan Memverifikasi Laporan",
-      videoSrc: "/public/videos/1.mkv",
+      videoSrc: "/videos/4.mP4",
     },
-    {
-      id: 2,
-      title: "Mengelola Laporan yang Diterima",
-      videoSrc: "/videos/tutorial-sekretaris-kelola.mp4",
-    },
+
     {
       id: 3,
-      title: "Melihat dan Mengunduh Data Statistik",
-      videoSrc: "/videos/tutorial-sekretaris-statistik.mp4",
+      title: "Melihat dan Mengunduh Laporan",
+      videoSrc: "/videos/5.mP4",
     },
   ];
 
